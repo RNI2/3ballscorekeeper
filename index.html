@@ -9,7 +9,7 @@ header{background:var(--navy);color:#fff;padding:calc(14px + env(safe-area-inset
 .counter{display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0}.count{font-size:58px;line-height:1;font-weight:900;min-width:80px}.counter button{width:76px;height:76px;border:0;border-radius:20px;font-size:40px;font-weight:700;background:var(--blue);color:#fff;touch-action:manipulation}.counter button:active{transform:scale(.96)}
 .actions{display:flex;gap:10px;justify-content:center}.actions button,.toolbar button{border:0;border-radius:12px;padding:13px 18px;font-weight:800;font-size:16px}.done{background:#168447;color:#fff;min-width:170px}.done:disabled{opacity:.4}.back{background:#e9eef3;color:#263746}
 .players{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}.player{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--cream)}.player input{width:100%;font-weight:700;border:0;border-bottom:1px solid var(--line);background:transparent;padding:5px;font-size:15px}.total{font-size:23px;font-weight:900;margin-top:6px}.leader{background:var(--green)}
-.current{padding:12px;text-align:center;font-weight:800}.toolbar{display:flex;gap:8px;padding:0 12px 12px}.toolbar button{flex:1}.new{background:#ffe6e6;color:#8b1e1e}
+.current{padding:12px;text-align:center;font-weight:800}.toolbar{display:flex;gap:8px;padding:0 12px 12px}.toolbar button{flex:1}.new{background:#ffe6e6;color:#8b1e1e}.add{background:#e5f1ff;color:#174f82}.remove{border:0;background:#ffe6e6;color:#8b1e1e;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:800;margin-top:7px}.inactive{opacity:.55;background:#f0f1f2}.status{font-size:11px;color:#687580;margin-top:4px}
 .tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid var(--line);padding:7px;text-align:center}th{background:var(--blue);color:#fff;font-size:12px}th:first-child,td:first-child{background:var(--pale);font-weight:700;width:48px}.edit{width:100%;min-width:58px;border:0;background:var(--cream);text-align:center;font-size:16px;padding:7px;border-radius:5px}
 .note{text-align:center;color:#66727d;font-size:12px;padding:0 12px 12px}
 @media(max-width:600px){.players{grid-template-columns:repeat(2,1fr)}.turnname{font-size:30px}.counter button{width:82px;height:82px}.card{margin:10px}.toolbar{padding:0 10px 10px}}
@@ -17,34 +17,43 @@ header{background:var(--navy);color:#fff;padding:calc(14px + env(safe-area-inset
 <header><h1>🎱 3-Ball Pool Scorekeeper</h1><div class="sub">Lowest total score wins • automatically saved</div></header>
 <section class="card"><div class="cardtitle">CURRENT TURN</div><div class="turn"><div class="turnmeta" id="turnMeta"></div><div class="turnname" id="turnName"></div><div class="label">Shots this turn</div><div class="counter"><button id="minus" aria-label="Subtract shot">−</button><div class="count" id="count">0</div><button id="plus" aria-label="Add shot">+</button></div><div class="actions"><button class="back" id="back">← Back</button><button class="done" id="done">✓ Done</button></div></div></section>
 <section class="card"><div class="cardtitle">LIVE SCORE TOTALS</div><div class="players" id="players"></div><div class="current" id="leader"></div></section>
-<div class="toolbar"><button class="new" id="newGame">New Game</button></div>
+<div class="toolbar"><button class="add" id="addPlayer">+ Add Player</button><button class="new" id="newGame">New Game</button></div>
 <section class="card"><div class="cardtitle">SCORECARD</div><div class="tablewrap"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div></section>
 <div class="note">Every tap saves on this device. Use the scorecard below to correct a completed score.</div>
 </div><script>
-const KEY='threeBallGameV2';
-const fresh=()=>({names:['Player 1','Player 2','Player 3','Player 4','Player 5','Player 6'],rounds:[Array(6).fill('')],round:0,player:0,draft:0});
+const KEY='threeBallGameV3',MAX=6;
+const fresh=()=>({players:[{name:'Player 1',active:true},{name:'Player 2',active:true}],rounds:[Array(2).fill('')],round:0,player:0,draft:0});
 let s;try{s=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){s=fresh()}
-if(!s.names||!s.rounds)s=fresh(); s.round??=0;s.player??=0;s.draft??=0;
-const save=()=>localStorage.setItem(KEY,JSON.stringify(s)), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const active=i=>s.rounds.some(r=>r[i]!==''), totals=()=>s.names.map((_,i)=>s.rounds.reduce((a,r)=>a+(r[i]===''?0:Number(r[i])||0),0));
+if(!s.players||!s.rounds)s=fresh();s.round??=0;s.player??=0;s.draft??=0;
+const save=()=>localStorage.setItem(KEY,JSON.stringify(s)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const activeIdx=()=>s.players.map((p,i)=>p.active?i:-1).filter(i=>i>=0);
+const totals=()=>s.players.map((_,i)=>s.rounds.reduce((a,r)=>a+(r[i]===''||r[i]==null?0:Number(r[i])||0),0));
+const hasScore=i=>s.rounds.some(r=>r[i]!==''&&r[i]!=null);
+function normalizeTurn(){let a=activeIdx();if(!a.length)return;if(!s.players[s.player]||!s.players[s.player].active)s.player=a[0]}
 function render(){
- document.getElementById('turnMeta').textContent='Round '+(s.round+1)+' • Player '+(s.player+1)+' of '+s.names.length;
- document.getElementById('turnName').textContent=s.names[s.player];document.getElementById('count').textContent=s.draft;document.getElementById('done').disabled=s.draft<1;document.getElementById('minus').disabled=s.draft<1;
- const t=totals(),used=s.names.map((_,i)=>active(i)),av=t.filter((_,i)=>used[i]),low=av.length?Math.min(...av):null;
- let p=document.getElementById('players');p.innerHTML='';s.names.forEach((n,i)=>{let d=document.createElement('div');d.className='player'+(used[i]&&t[i]===low?' leader':'');d.innerHTML='<input value="'+esc(n)+'" data-name="'+i+'"><div class="total">'+(used[i]?t[i]:'—')+'</div>';p.appendChild(d)});
- let leaders=s.names.filter((_,i)=>used[i]&&t[i]===low);document.getElementById('leader').textContent=low===null?'🏆 No completed scores yet':leaders.length>1?'🏆 TIE — '+leaders.join(' & ')+' — '+low+' shots':'🏆 Current Leader: '+leaders[0]+' — '+low+' shots';
- document.getElementById('head').innerHTML='<th>Round</th>'+s.names.map(n=>'<th>'+esc(n)+'</th>').join('');
- let b=document.getElementById('body');b.innerHTML='';s.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+r.map((v,pi)=>'<td><input class="edit" inputmode="numeric" value="'+esc(v)+'" data-r="'+ri+'" data-p="'+pi+'"></td>').join('');b.appendChild(tr)});
- bind();
+ normalizeTurn();let a=activeIdx(),pos=a.indexOf(s.player);
+ document.getElementById('turnMeta').textContent='Round '+(s.round+1)+' • Player '+(pos+1)+' of '+a.length;
+ document.getElementById('turnName').textContent=s.players[s.player].name;document.getElementById('count').textContent=s.draft;document.getElementById('done').disabled=s.draft<1;document.getElementById('minus').disabled=s.draft<1;
+ const t=totals(),eligible=a.filter(i=>hasScore(i)),low=eligible.length?Math.min(...eligible.map(i=>t[i])):null;
+ let p=document.getElementById('players');p.innerHTML='';
+ s.players.forEach((pl,i)=>{let d=document.createElement('div');d.className='player'+(!pl.active?' inactive':'')+(pl.active&&hasScore(i)&&t[i]===low?' leader':'');
+ let canRemove=pl.active&&a.length>2;d.innerHTML='<input value="'+esc(pl.name)+'" data-name="'+i+'"><div class="total">'+(hasScore(i)?t[i]:'—')+'</div><div class="status">'+(pl.active?'Active':'No longer playing')+'</div>'+(canRemove?'<button class="remove" data-remove="'+i+'">Remove</button>':'');p.appendChild(d)});
+ let leaders=eligible.filter(i=>t[i]===low).map(i=>s.players[i].name);document.getElementById('leader').textContent=low===null?'🏆 No completed scores yet':leaders.length>1?'🏆 TIE — '+leaders.join(' & ')+' — '+low+' shots':'🏆 Current Leader: '+leaders[0]+' — '+low+' shots';
+ document.getElementById('head').innerHTML='<th>Round</th>'+s.players.map(p=>'<th>'+esc(p.name)+(p.active?'':' †')+'</th>').join('');
+ let b=document.getElementById('body');b.innerHTML='';s.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+s.players.map((_,pi)=>'<td><input class="edit" inputmode="numeric" value="'+esc(r[pi]??'')+'" data-r="'+ri+'" data-p="'+pi+'"></td>').join('');b.appendChild(tr)});
+ document.getElementById('addPlayer').disabled=s.players.length>=MAX;bind();
 }
 function bind(){
- document.querySelectorAll('[data-name]').forEach(x=>x.onchange=e=>{let i=+e.target.dataset.name;s.names[i]=e.target.value.trim()||'Player '+(i+1);save();render()});
- document.querySelectorAll('.edit').forEach(x=>x.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,v=e.target.value.trim();if(v!==''&&(!/^\d+$/.test(v)||+v<1||+v>99)){render();return}s.rounds[r][p]=v;save();render()});
+ document.querySelectorAll('[data-name]').forEach(x=>x.onchange=e=>{let i=+e.target.dataset.name;s.players[i].name=e.target.value.trim()||'Player '+(i+1);save();render()});
+ document.querySelectorAll('.edit').forEach(x=>x.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,v=e.target.value.trim();if(v!==''&&(!/^\\d+$/.test(v)||+v<1||+v>99)){render();return}s.rounds[r][p]=v;save();render()});
+ document.querySelectorAll('[data-remove]').forEach(x=>x.onclick=e=>removePlayer(+e.target.dataset.remove));
 }
+function removePlayer(i){if(activeIdx().length<=2)return;if(!confirm('Remove '+s.players[i].name+' from future turns? Their existing scores will stay in the scorecard.'))return;s.players[i].active=false;if(i===s.player){s.draft=0;let a=activeIdx(),next=a.find(x=>x>i);s.player=next??a[0];if(!next&&a[0]<i){s.round++;if(!s.rounds[s.round])s.rounds.push(Array(s.players.length).fill(''))}}save();render()}
 document.getElementById('plus').onclick=()=>{if(s.draft<99)s.draft++;save();render()};
 document.getElementById('minus').onclick=()=>{if(s.draft>0)s.draft--;save();render()};
-document.getElementById('done').onclick=()=>{if(s.draft<1)return;s.rounds[s.round][s.player]=String(s.draft);s.draft=0;if(s.player<s.names.length-1)s.player++;else{s.player=0;s.round++;if(!s.rounds[s.round])s.rounds.push(Array(6).fill(''))}save();render();window.scrollTo({top:0,behavior:'smooth'})};
-document.getElementById('back').onclick=()=>{if(s.draft>0&&!confirm('Discard the current shot count and go back?'))return;s.draft=0;if(s.player>0)s.player--;else if(s.round>0){s.round--;s.player=s.names.length-1}let old=s.rounds[s.round][s.player];if(old!==''){s.draft=Number(old);s.rounds[s.round][s.player]=''}save();render()};
-document.getElementById('newGame').onclick=()=>{if(confirm('Start a new game? This clears all scores and resets player names.')){s=fresh();save();render()}};
+document.getElementById('done').onclick=()=>{if(s.draft<1)return;s.rounds[s.round][s.player]=String(s.draft);s.draft=0;let a=activeIdx(),pos=a.indexOf(s.player);if(pos<a.length-1)s.player=a[pos+1];else{s.player=a[0];s.round++;if(!s.rounds[s.round])s.rounds.push(Array(s.players.length).fill(''))}save();render();window.scrollTo({top:0,behavior:'smooth'})};
+document.getElementById('back').onclick=()=>{if(s.draft>0&&!confirm('Discard the current shot count and go back?'))return;s.draft=0;let a=activeIdx(),pos=a.indexOf(s.player);if(pos>0)s.player=a[pos-1];else if(s.round>0){s.round--;s.player=a[a.length-1]}let old=s.rounds[s.round][s.player];if(old!==''){s.draft=Number(old);s.rounds[s.round][s.player]=''}save();render()};
+document.getElementById('addPlayer').onclick=()=>{if(s.players.length>=MAX)return;let n=s.players.length+1;s.players.push({name:'Player '+n,active:true});s.rounds.forEach(r=>r.push(''));save();render()};
+document.getElementById('newGame').onclick=()=>{if(confirm('Start a new game? This clears all scores and returns to two players.')){s=fresh();save();render()}};
 render();
 </script></body></html>
