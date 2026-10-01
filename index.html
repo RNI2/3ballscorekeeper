@@ -1,72 +1,50 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#17365d">
-<title>3-Ball Scorekeeper</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17365d"><title>3-Ball Scorekeeper</title>
 <style>
 :root{--navy:#17365d;--blue:#2f75b5;--cream:#fffdf2;--pale:#eaf2f8;--line:#c7d3df;--green:#dff3e4;--text:#17202a}
-*{box-sizing:border-box}body{margin:0;background:#f4f7fa;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-.app{max-width:900px;margin:auto;min-height:100vh;background:white;padding-bottom:80px}
-header{background:var(--navy);color:white;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;position:sticky;top:0;z-index:5}
-h1{font-size:22px;margin:0}.sub{font-size:12px;opacity:.85;margin-top:3px}
-.toolbar{display:flex;gap:8px;padding:12px;flex-wrap:wrap}.toolbar button,.primary{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
-.primary{background:var(--blue);color:white}.secondary{background:#e9eef3;color:#203040}.danger{background:#ffe6e6;color:#8b1e1e}
-.card{margin:0 12px 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:white}
-.cardtitle{background:var(--navy);color:white;font-weight:800;padding:10px 12px}
-.players{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}
-.player{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--cream)}
-.player input{width:100%;font-weight:700;border:0;border-bottom:1px solid var(--line);background:transparent;padding:5px;font-size:15px}
-.total{font-size:24px;font-weight:900;margin-top:6px}.leader{background:var(--green)}
-.current{padding:14px;text-align:center;font-size:18px;font-weight:800}
-.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid var(--line);padding:6px;text-align:center}th{background:var(--blue);color:white;font-size:12px}
-th:first-child,td:first-child{background:var(--pale);font-weight:700;width:48px}
-.score{width:100%;min-width:62px;border:0;background:var(--cream);text-align:center;font-size:18px;padding:8px;border-radius:6px}
-.score:focus{outline:2px solid var(--blue);background:white}
-.notice{font-size:12px;text-align:center;color:#637080;padding:4px 12px 12px}
-@media(max-width:600px){.players{grid-template-columns:repeat(2,1fr)}h1{font-size:20px}.toolbar button{flex:1}th{}}
-</style>
-</head>
-<body><div class="app">
-<header><h1>🎱 3-Ball Pool Scorekeeper</h1><div class="sub">Lowest total score wins • saves automatically on this device</div></header>
-<div class="toolbar">
-<button class="primary" id="addRound">+ Add Round</button>
-<button class="secondary" id="undo">Undo Last Entry</button>
-<button class="danger" id="newGame">New Game</button>
-</div>
-<section class="card"><div class="cardtitle">LIVE SCORE TOTALS</div><div class="players" id="players"></div><div class="current" id="leader">No scores yet</div></section>
-<section class="card"><div class="cardtitle">SCORECARD</div><div class="tablewrap"><table><thead><tr id="head"><th>Round</th></tr></thead><tbody id="body"></tbody></table></div></section>
-<div class="notice">Scores are stored in this browser on this device. Closing the tab or locking your phone will not reset the game.</div>
-</div>
-<script>
-const KEY='threeBallGameV1';
-const defaults=()=>({names:['Player 1','Player 2','Player 3','Player 4','Player 5','Player 6'],rounds:Array.from({length:10},()=>Array(6).fill('')),history:[]});
-let state;
-try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){state=defaults()}
-if(!state.names||!state.rounds)state=defaults();
-const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
-const totals=()=>state.names.map((_,p)=>state.rounds.reduce((s,r)=>s+(r[p]===''?0:Number(r[p])||0),0));
-const active=()=>state.names.map((_,p)=>state.rounds.some(r=>r[p]!==''&&r[p]!=null));
+*{box-sizing:border-box}body{margin:0;background:#f4f7fa;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}.app{max-width:900px;margin:auto;min-height:100vh;background:#fff;padding-bottom:70px}
+header{background:var(--navy);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px}h1{font-size:22px;margin:0}.sub{font-size:12px;opacity:.85;margin-top:3px}
+.card{margin:12px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.cardtitle{background:var(--navy);color:#fff;font-weight:800;padding:10px 12px}
+.turn{text-align:center;padding:18px 14px}.turnmeta{font-size:13px;font-weight:800;color:#617080;text-transform:uppercase;letter-spacing:.06em}.turnname{font-size:32px;font-weight:900;margin:6px 0}.label{font-size:14px;color:#65717c}
+.counter{display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0}.count{font-size:58px;line-height:1;font-weight:900;min-width:80px}.counter button{width:76px;height:76px;border:0;border-radius:20px;font-size:40px;font-weight:700;background:var(--blue);color:#fff;touch-action:manipulation}.counter button:active{transform:scale(.96)}
+.actions{display:flex;gap:10px;justify-content:center}.actions button,.toolbar button{border:0;border-radius:12px;padding:13px 18px;font-weight:800;font-size:16px}.done{background:#168447;color:#fff;min-width:170px}.done:disabled{opacity:.4}.back{background:#e9eef3;color:#263746}
+.players{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}.player{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--cream)}.player input{width:100%;font-weight:700;border:0;border-bottom:1px solid var(--line);background:transparent;padding:5px;font-size:15px}.total{font-size:23px;font-weight:900;margin-top:6px}.leader{background:var(--green)}
+.current{padding:12px;text-align:center;font-weight:800}.toolbar{display:flex;gap:8px;padding:0 12px 12px}.toolbar button{flex:1}.new{background:#ffe6e6;color:#8b1e1e}
+.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid var(--line);padding:7px;text-align:center}th{background:var(--blue);color:#fff;font-size:12px}th:first-child,td:first-child{background:var(--pale);font-weight:700;width:48px}.edit{width:100%;min-width:58px;border:0;background:var(--cream);text-align:center;font-size:16px;padding:7px;border-radius:5px}
+.note{text-align:center;color:#66727d;font-size:12px;padding:0 12px 12px}
+@media(max-width:600px){.players{grid-template-columns:repeat(2,1fr)}.turnname{font-size:30px}.counter button{width:82px;height:82px}.card{margin:10px}.toolbar{padding:0 10px 10px}}
+</style></head><body><div class="app">
+<header><h1>🎱 3-Ball Pool Scorekeeper</h1><div class="sub">Lowest total score wins • automatically saved</div></header>
+<section class="card"><div class="cardtitle">CURRENT TURN</div><div class="turn"><div class="turnmeta" id="turnMeta"></div><div class="turnname" id="turnName"></div><div class="label">Shots this turn</div><div class="counter"><button id="minus" aria-label="Subtract shot">−</button><div class="count" id="count">0</div><button id="plus" aria-label="Add shot">+</button></div><div class="actions"><button class="back" id="back">← Back</button><button class="done" id="done">✓ Done</button></div></div></section>
+<section class="card"><div class="cardtitle">LIVE SCORE TOTALS</div><div class="players" id="players"></div><div class="current" id="leader"></div></section>
+<div class="toolbar"><button class="new" id="newGame">New Game</button></div>
+<section class="card"><div class="cardtitle">SCORECARD</div><div class="tablewrap"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div></section>
+<div class="note">Every tap saves on this device. Use the scorecard below to correct a completed score.</div>
+</div><script>
+const KEY='threeBallGameV2';
+const fresh=()=>({names:['Player 1','Player 2','Player 3','Player 4','Player 5','Player 6'],rounds:[Array(6).fill('')],round:0,player:0,draft:0});
+let s;try{s=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){s=fresh()}
+if(!s.names||!s.rounds)s=fresh(); s.round??=0;s.player??=0;s.draft??=0;
+const save=()=>localStorage.setItem(KEY,JSON.stringify(s)), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const active=i=>s.rounds.some(r=>r[i]!==''), totals=()=>s.names.map((_,i)=>s.rounds.reduce((a,r)=>a+(r[i]===''?0:Number(r[i])||0),0));
 function render(){
- const t=totals(),a=active(),vals=t.filter((_,i)=>a[i]),low=vals.length?Math.min(...vals):null;
- const ps=document.getElementById('players');ps.innerHTML='';
- state.names.forEach((n,i)=>{let d=document.createElement('div');d.className='player'+(a[i]&&t[i]===low?' leader':'');
- d.innerHTML='<input aria-label="Player name" value="'+esc(n)+'" data-name="'+i+'"><div class="total">'+(a[i]?t[i]:'—')+'</div>';ps.appendChild(d)});
- let leaders=state.names.filter((_,i)=>a[i]&&t[i]===low);
- document.getElementById('leader').textContent=low===null?'🏆 No scores yet':leaders.length>1?'🏆 TIE — '+leaders.join(' & ')+' — '+low+' shots':'🏆 Current Leader: '+leaders[0]+' — '+low+' shots';
- const h=document.getElementById('head');h.innerHTML='<th>Round</th>'+state.names.map(n=>'<th>'+esc(n)+'</th>').join('');
- const b=document.getElementById('body');b.innerHTML='';
- state.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+r.map((v,pi)=>'<td><input class="score" inputmode="numeric" pattern="[0-9]*" value="'+esc(v)+'" data-r="'+ri+'" data-p="'+pi+'" aria-label="Round '+(ri+1)+' '+esc(state.names[pi])+'"></td>').join('');b.appendChild(tr)});
+ document.getElementById('turnMeta').textContent='Round '+(s.round+1)+' • Player '+(s.player+1)+' of '+s.names.length;
+ document.getElementById('turnName').textContent=s.names[s.player];document.getElementById('count').textContent=s.draft;document.getElementById('done').disabled=s.draft<1;document.getElementById('minus').disabled=s.draft<1;
+ const t=totals(),used=s.names.map((_,i)=>active(i)),av=t.filter((_,i)=>used[i]),low=av.length?Math.min(...av):null;
+ let p=document.getElementById('players');p.innerHTML='';s.names.forEach((n,i)=>{let d=document.createElement('div');d.className='player'+(used[i]&&t[i]===low?' leader':'');d.innerHTML='<input value="'+esc(n)+'" data-name="'+i+'"><div class="total">'+(used[i]?t[i]:'—')+'</div>';p.appendChild(d)});
+ let leaders=s.names.filter((_,i)=>used[i]&&t[i]===low);document.getElementById('leader').textContent=low===null?'🏆 No completed scores yet':leaders.length>1?'🏆 TIE — '+leaders.join(' & ')+' — '+low+' shots':'🏆 Current Leader: '+leaders[0]+' — '+low+' shots';
+ document.getElementById('head').innerHTML='<th>Round</th>'+s.names.map(n=>'<th>'+esc(n)+'</th>').join('');
+ let b=document.getElementById('body');b.innerHTML='';s.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+r.map((v,pi)=>'<td><input class="edit" inputmode="numeric" value="'+esc(v)+'" data-r="'+ri+'" data-p="'+pi+'"></td>').join('');b.appendChild(tr)});
  bind();
 }
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function bind(){
- document.querySelectorAll('[data-name]').forEach(el=>el.onchange=e=>{state.names[+e.target.dataset.name]=e.target.value.trim()||'Player '+(+e.target.dataset.name+1);save();render()});
- document.querySelectorAll('.score').forEach(el=>el.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,old=state.rounds[r][p];let v=e.target.value.trim();if(v!==''&&(!/^\d+$/.test(v)||+v<1||+v>99)){e.target.value=old;return}state.history.push({r,p,old});if(state.history.length>50)state.history.shift();state.rounds[r][p]=v;save();render()});
+ document.querySelectorAll('[data-name]').forEach(x=>x.onchange=e=>{let i=+e.target.dataset.name;s.names[i]=e.target.value.trim()||'Player '+(i+1);save();render()});
+ document.querySelectorAll('.edit').forEach(x=>x.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,v=e.target.value.trim();if(v!==''&&(!/^\d+$/.test(v)||+v<1||+v>99)){render();return}s.rounds[r][p]=v;save();render()});
 }
-document.getElementById('addRound').onclick=()=>{state.rounds.push(Array(6).fill(''));save();render();setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),50)};
-document.getElementById('undo').onclick=()=>{let x=state.history.pop();if(!x)return;state.rounds[x.r][x.p]=x.old;save();render()};
-document.getElementById('newGame').onclick=()=>{if(confirm('Start a new game? This clears all scores and player names.')){state=defaults();save();render()}};
+document.getElementById('plus').onclick=()=>{if(s.draft<99)s.draft++;save();render()};
+document.getElementById('minus').onclick=()=>{if(s.draft>0)s.draft--;save();render()};
+document.getElementById('done').onclick=()=>{if(s.draft<1)return;s.rounds[s.round][s.player]=String(s.draft);s.draft=0;if(s.player<s.names.length-1)s.player++;else{s.player=0;s.round++;if(!s.rounds[s.round])s.rounds.push(Array(6).fill(''))}save();render();window.scrollTo({top:0,behavior:'smooth'})};
+document.getElementById('back').onclick=()=>{if(s.draft>0&&!confirm('Discard the current shot count and go back?'))return;s.draft=0;if(s.player>0)s.player--;else if(s.round>0){s.round--;s.player=s.names.length-1}let old=s.rounds[s.round][s.player];if(old!==''){s.draft=Number(old);s.rounds[s.round][s.player]=''}save();render()};
+document.getElementById('newGame').onclick=()=>{if(confirm('Start a new game? This clears all scores and resets player names.')){s=fresh();save();render()}};
 render();
 </script></body></html>
