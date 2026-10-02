@@ -44,7 +44,7 @@ function render(){
  document.getElementById('head').innerHTML='<th>Round</th>'+s.players.map(p=>'<th>'+esc(p.name)+(p.active?'':' †')+'</th>').join('');
  let b=document.getElementById('body');b.innerHTML='';s.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+s.players.map((_,pi)=>'<td><input class="edit" inputmode="numeric" value="'+esc(r[pi]??'')+'" data-r="'+ri+'" data-p="'+pi+'"><div class="status scratchnote">'+((s.scratches[ri]&&s.scratches[ri][pi])?'Scratch × '+s.scratches[ri][pi]:'&nbsp;')+'</div></td>').join('');b.appendChild(tr)});
  document.getElementById('addPlayer').disabled=playing||s.players.length>=MAX;
- document.querySelectorAll('[data-name]').forEach(x=>x.disabled=playing);
+ document.querySelectorAll('[data-name]').forEach(x=>x.disabled=false);
  let ga=document.getElementById('gameAction');ga.textContent=playing?'🏁 Finish Game':'🎱 Start Game';ga.className=playing?'new':'start';
  renderHistory();bind();
 }
