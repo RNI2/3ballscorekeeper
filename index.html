@@ -39,12 +39,12 @@ function render(){
  const t=totals(),eligible=a.filter(i=>hasScore(i)),low=eligible.length?Math.min(...eligible.map(i=>t[i])):null;
  let p=document.getElementById('players');p.innerHTML='';
  s.players.forEach((pl,i)=>{let d=document.createElement('div');d.className='player'+(!pl.active?' inactive':'')+(pl.active&&hasScore(i)&&t[i]===low?' leader':'');
- let sc=s.scratches.reduce((n,r)=>n+(Number(r[i])||0),0),canRemove=!playing&&pl.active&&a.length>2;d.innerHTML='<input value="'+esc(pl.name)+'" data-name="'+i+'"><div class="total">'+(hasScore(i)?t[i]:'—')+'</div><div class="status">'+(pl.active?'Active':'No longer playing')+' • Scratches: '+sc+'</div>'+(canRemove?'<button class="remove" data-remove="'+i+'">Remove</button>':'');p.appendChild(d)});
+ let sc=s.scratches.reduce((n,r)=>n+(Number(r[i])||0),0),canRemove=!playing&&pl.active&&a.length>2;let defaultName='Player '+(i+1),shownName=pl.name===defaultName?'':pl.name;d.innerHTML='<input value="'+esc(shownName)+'" placeholder="'+esc(defaultName)+'" data-name="'+i+'"><div class="total">'+(hasScore(i)?t[i]:'—')+'</div><div class="status">'+(pl.active?'Active':'No longer playing')+' • Scratches: '+sc+'</div>'+(canRemove?'<button class="remove" data-remove="'+i+'">Remove</button>':'');p.appendChild(d)});
  let leaders=eligible.filter(i=>t[i]===low).map(i=>s.players[i].name);document.getElementById('leader').textContent=low===null?'🏆 No completed scores yet':leaders.length>1?'🏆 TIE — '+leaders.join(' & ')+' — '+low+' shots':'🏆 Current Leader: '+leaders[0]+' — '+low+' shots';
  document.getElementById('head').innerHTML='<th>Round</th>'+s.players.map(p=>'<th>'+esc(p.name)+(p.active?'':' †')+'</th>').join('');
  let b=document.getElementById('body');b.innerHTML='';s.rounds.forEach((r,ri)=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+(ri+1)+'</td>'+s.players.map((_,pi)=>'<td><input class="edit" inputmode="numeric" value="'+esc(r[pi]??'')+'" data-r="'+ri+'" data-p="'+pi+'"><div class="status scratchnote">'+((s.scratches[ri]&&s.scratches[ri][pi])?'Scratch × '+s.scratches[ri][pi]:'&nbsp;')+'</div></td>').join('');b.appendChild(tr)});
  document.getElementById('addPlayer').disabled=playing||s.players.length>=MAX;
- document.querySelectorAll('[data-name]').forEach(x=>{x.disabled=false;x.onclick=e=>{if(/^Player \\d+$/.test(e.target.value)){e.target.value='';e.target.dataset.clearedDefault='1';}};x.onfocus=e=>{if(/^Player \\d+$/.test(e.target.value)){e.target.value='';e.target.dataset.clearedDefault='1';}};x.onblur=e=>{if(e.target.dataset.clearedDefault==='1'&&!e.target.value.trim()){delete e.target.dataset.clearedDefault;}}});
+ document.querySelectorAll('[data-name]').forEach(x=>x.disabled=false);
  let ga=document.getElementById('gameAction');ga.textContent=playing?'🏁 Finish Game':'🎱 Start Game';ga.className=playing?'new':'start';document.getElementById('abandonGame').style.display=playing?'inline-block':'none';
  renderHistory();bind();
 }
