@@ -26,7 +26,7 @@ h1{font-family:Georgia,'Times New Roman',serif;font-size:29px;letter-spacing:.2p
 const KEY='threeBallGameV4',HISTORY_KEY='threeBallHistoryV1',MAX=6;
 const fresh=()=>({players:[{name:'Player 1',active:true},{name:'Player 2',active:true}],rounds:[Array(2).fill('')],scratches:[Array(2).fill(0)],round:0,player:0,draft:0,draftScratches:0,started:false});
 let s;try{s=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){s=fresh()}
-if(!s.players||!s.rounds)s=fresh();s.scratches??=s.rounds.map(r=>Array(r.length).fill(0));s.round??=0;s.player??=0;s.draft??=0;s.draftScratches??=0;s.started??=false;let history;try{history=JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){history=[]}const saveHistory=()=>localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+if(!s.players||!s.rounds)s=fresh();if(!s.started&&s.players.length>2&&s.players.every((p,i)=>p.name==='Player '+(i+1))&&!s.rounds.some(r=>r.some(v=>v!==''&&v!=null)))s=fresh();s.scratches??=s.rounds.map(r=>Array(r.length).fill(0));s.round??=0;s.player??=0;s.draft??=0;s.draftScratches??=0;s.started??=false;let history;try{history=JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){history=[]}const saveHistory=()=>localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
 const save=()=>localStorage.setItem(KEY,JSON.stringify(s)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const activeIdx=()=>s.players.map((p,i)=>p.active?i:-1).filter(i=>i>=0);
 const totals=()=>s.players.map((_,i)=>s.rounds.reduce((a,r)=>a+(r[i]===''||r[i]==null?0:Number(r[i])||0),0));
