@@ -54,7 +54,7 @@ function archiveGame(){let a=activeIdx(),t=totals(),rc=completedRoundCount();his
 function bind(){
  document.querySelectorAll('[data-rule]').forEach(btn=>btn.onclick=()=>{if(s.started)return;s.rule=btn.dataset.rule;save();render()});
  document.querySelectorAll('[data-name]').forEach(x=>x.onchange=e=>{let i=+e.target.dataset.name;s.players[i].name=e.target.value.trim()||'Player '+(i+1);save();render()});
- document.querySelectorAll('.edit').forEach(x=>{x.disabled=!s.started;x.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,v=e.target.value.trim();if(v!==''&&(!/^\\d+$/.test(v)||+v<1||+v>99)){render();return}s.rounds[r][p]=v;save();render()}});
+ document.querySelectorAll('.edit').forEach(x=>{x.disabled=!s.started;x.onchange=e=>{let r=+e.target.dataset.r,p=+e.target.dataset.p,v=e.target.value.trim();if(v!==''&&(!/^\d+$/.test(v)||+v<1||+v>99)){render();return}s.rounds[r][p]=v;save();render()}});
  document.querySelectorAll('[data-remove]').forEach(x=>x.onclick=e=>removePlayer(+e.target.dataset.remove));
 }
 function removePlayer(i){if(activeIdx().length<=2)return;if(!confirm('Remove '+s.players[i].name+' from future turns? Their existing scores will stay in the scorecard.'))return;s.players[i].active=false;if(i===s.player){s.draft=0;let a=activeIdx(),next=a.find(x=>x>i);s.player=next??a[0];if(!next&&a[0]<i){s.round++;if(!s.rounds[s.round]){s.rounds.push(Array(s.players.length).fill(''));s.scratches.push(Array(s.players.length).fill(0))}}}save();render()}
