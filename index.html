@@ -25,10 +25,25 @@ h1{font-family:Georgia,'Times New Roman',serif;font-size:29px;letter-spacing:.2p
 <section class="card"><div class="cardtitle">SCORECARD</div><div class="tablewrap"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div></section>
 <div class="note">Every tap saves on this device. Use the scorecard below to correct a completed score.</div><section class="card"><div class="cardtitle">GAME HISTORY</div><div class="history" id="history"></div></section>
 </div><script>
-const BUILD='master-hit-20261011';const KEY='threeBallGameV4',HISTORY_KEY='threeBallHistoryV1',MAX=6;
+const BUILD='master-score-fix-20261011';const KEY='threeBallGameV4',HISTORY_KEY='threeBallHistoryV1',MAX=6;
 const fresh=()=>({players:[{name:'Player 1',active:true},{name:'Player 2',active:true}],rounds:[Array(2).fill('')],scratches:[Array(2).fill(0)],masterRounds:[Array(2).fill(null)],round:0,player:0,draft:0,draftScratches:0,masterShots:0,masterPocketed:0,masterRemaining:null,masterActions:[],finalScratchUsed:false,started:false,rule:null,difficulty:null,shotCap:null});
 let s;try{s=JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){s=fresh()}
-if(!s.players||!s.rounds)s=fresh();if(!s.started&&s.players.length>2&&s.players.every((p,i)=>p.name==='Player '+(i+1))&&!s.rounds.some(r=>r.some(v=>v!==''&&v!=null)))s=fresh();s.scratches??=s.rounds.map(r=>Array(r.length).fill(0));s.masterRounds??=s.rounds.map(r=>Array(r.length).fill(null));s.round??=0;s.player??=0;s.draft??=0;s.draftScratches??=0;s.finalScratchUsed??=false;s.masterShots??=0;s.masterPocketed??=0;s.masterRemaining??=null;s.masterActions??=[];s.started??=false;s.rule??=null;s.difficulty??=(s.started?'novice':null);s.shotCap??=null;if(s.difficulty==='master'&&(!Number.isInteger(Number(s.shotCap))||Number(s.shotCap)<1||Number(s.shotCap)>99))s.shotCap=6;let history;try{history=JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){history=[]}const saveHistory=()=>localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+if(!s.players||!s.rounds)s=fresh();if(!s.started&&s.players.length>2&&s.players.every((p,i)=>p.name==='Player '+(i+1))&&!s.rounds.some(r=>r.some(v=>v!==''&&v!=null)))s=fresh();s.scratches??=s.rounds.map(r=>Array(r.length).fill(0));s.masterRounds??=s.rounds.map(r=>Array(r.length).fill(null));s.round??=0;s.player??=0;s.draft??=0;s.draftScratches??=0;s.finalScratchUsed??=false;s.masterShots??=0;s.masterPocketed??=0;s.masterRemaining??=null;s.masterActions??=[];s.started??=false;s.rule??=null;s.difficulty??=(s.started?'novice':null);s.shotCap??=null;if(s.difficulty==='master'&&(!Number.isInteger(Number(s.shotCap))||Number(s.shotCap)<1||Number(s.shotCap)>99))s.shotCap=6;// Correct previously saved Master turns only when their score matches the old formula.
+if(s.difficulty==='master'&&!localStorage.getItem('masterScoreFormulaV2')){
+ (s.masterRounds||[]).forEach((row,ri)=>(row||[]).forEach((v,pi)=>{
+  if(!v)return;
+  const old=Number(v.shots)-2*Number(v.pocketed)+Number(v.scratches)+(Number(v.remaining)||0);
+  if(Number(v.score)!==old||Number(s.rounds?.[ri]?.[pi])!==old)return;
+  const corrected=Number(v.shots)-Number(v.pocketed)+Number(v.scratches)+(Number(v.remaining)||0);
+  v.score=corrected;s.rounds[ri][pi]=String(corrected);
+ }));
+ if(s.started&&s.masterActions?.length){
+  s.draft=s.masterShots-s.masterPocketed+s.draftScratches+(Number(s.masterRemaining)||0);
+ }
+ localStorage.setItem(KEY,JSON.stringify(s));
+ localStorage.setItem('masterScoreFormulaV2','1');
+}
+let history;try{history=JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch(e){history=[]}const saveHistory=()=>localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
 const save=()=>localStorage.setItem(KEY,JSON.stringify(s)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const activeIdx=()=>s.players.map((p,i)=>p.active?i:-1).filter(i=>i>=0);
 const totals=()=>s.players.map((_,i)=>s.rounds.reduce((a,r)=>a+(r[i]===''||r[i]==null?0:Number(r[i])||0),0));
@@ -81,7 +96,7 @@ function renderHistory(){
 }
 function completedRoundCount(){return s.rounds.filter(r=>activeIdx().every(i=>r[i]!==''&&r[i]!=null)).length}
 function archiveGame(){let a=activeIdx(),t=totals(),rc=completedRoundCount();history.push({difficulty:s.difficulty,shotCap:shotCap(),rule:s.rule,stamp:new Date().toLocaleString([], {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}),roundCount:rc,playerIndices:a.slice(),players:a.map(i=>({name:s.players[i].name,total:t[i],scratches:s.scratches.reduce((n,r)=>n+(Number(r[i])||0),0)})),rounds:s.rounds.map(r=>r.slice()),scratches:s.scratches.map(r=>r.slice()),masterRounds:(s.masterRounds||[]).map(r=>r.map(v=>v?{...v}:null))});saveHistory()}
-function bind(){document.querySelectorAll('[data-remaining]').forEach(b=>b.onclick=()=>{if(s.difficulty!=='master'||s.masterShots<shotCap())return;s.masterRemaining=Number(b.dataset.remaining);s.draft=s.masterShots-2*s.masterPocketed+s.draftScratches+s.masterRemaining;save();render()});
+function bind(){document.querySelectorAll('[data-remaining]').forEach(b=>b.onclick=()=>{if(s.difficulty!=='master'||s.masterShots<shotCap())return;s.masterRemaining=Number(b.dataset.remaining);s.draft=s.masterShots-s.masterPocketed+s.draftScratches+s.masterRemaining;save();render()});
  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(s.started)return;s.difficulty=b.dataset.mode;if(s.difficulty==='master')s.shotCap=6;else if(s.difficulty!=='pro')s.shotCap=null;save();render()});document.getElementById('changeDifficulty').onclick=()=>{if(s.started)return;s.difficulty=null;s.shotCap=null;save();render()};document.getElementById('proCap').onchange=e=>{if(s.started)return;let v=e.target.value.trim();s.shotCap=/^\d+$/.test(v)&&+v>=1&&+v<=99?+v:null;save();render()};
  document.querySelectorAll('[data-rule]').forEach(btn=>btn.onclick=()=>{if(s.started)return;s.rule=btn.dataset.rule;save();render()});
  document.querySelectorAll('[data-name]').forEach(x=>x.onchange=e=>{let i=+e.target.dataset.name;s.players[i].name=e.target.value.trim()||'Player '+(i+1);save();render()});
@@ -93,7 +108,7 @@ function masterShot(balls,scratch){
  if(!s.started||s.difficulty!=='master'||s.masterShots>=shotCap()||s.masterPocketed>=3||!Number.isInteger(balls)||balls<0||balls>3-s.masterPocketed)return;
  s.masterShots++;s.masterPocketed+=balls;if(scratch)s.draftScratches++;
  s.masterActions.push({balls,scratch:!!scratch});
- s.draft=s.masterShots-2*s.masterPocketed+s.draftScratches;
+ s.draft=s.masterShots-s.masterPocketed+s.draftScratches;
  masterHitOpen=false;masterScratchPending=false;save();render();
  if(s.masterPocketed===3)document.getElementById('done').click();
 }
@@ -107,7 +122,7 @@ document.getElementById('masterUndo').onclick=()=>{
  if(last==='scratch')s.draftScratches--;
  else if(typeof last==='string'){s.masterShots--;if(last==='pocket')s.masterPocketed--}
  else{s.masterShots--;s.masterPocketed-=Number(last.balls)||0;if(last.scratch)s.draftScratches--}
- s.masterRemaining=null;s.draft=s.masterShots-2*s.masterPocketed+s.draftScratches;
+ s.masterRemaining=null;s.draft=s.masterShots-s.masterPocketed+s.draftScratches;
  masterHitOpen=false;masterScratchPending=false;save();render();
 };
 document.getElementById('plus').onclick=()=>{if(s.draft<999&&(shotCap()===null||physicalShots()<shotCap()))s.draft++;save();render()};
