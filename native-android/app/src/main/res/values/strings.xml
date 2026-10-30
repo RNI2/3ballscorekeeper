@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">3 Ball Scorekeeper</string>
+    <string name="studio_name">No Detours Studio LLC</string>
+    <string name="foundation_message">Native Android foundation</string>
+    <string name="setup">Game Setup</string>
+    <string name="scoring">Live Scoring</string>
+    <string name="history">Game History</string>
+    <string name="settings">Settings</string>
+    <string name="setup_placeholder">Novice · Pro · Expert · Master</string>
+    <string name="scoring_placeholder">Set up a game to begin scoring. Scoring controls are coming in the next increment.</string>
+    <string name="history_placeholder">Completed games will appear here when local storage is connected.</string>
+    <string name="settings_placeholder">Game preferences will be available in a later increment.</string>
+</resources>

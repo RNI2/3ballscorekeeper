@@ -1,0 +1,17 @@
+# label mode cap actions score shots pocketed scratches done
+novice-break NOVICE - H0 1 1 0 0 true
+novice-scratches NOVICE - S,S,H0,U 2 0 0 2 true
+pro-cap PRO 2 H0,S,H0,S 4 2 0 2 true
+pro-undo PRO 1 H0,S,U,H0,S 3 1 0 2 true
+expert-cap EXPERT - H0,H0,H0,H0,H0,S 6 5 0 1 true
+master-empty MASTER 6 - 0 0 0 0 false
+master-break-clear MASTER 6 H3 -2 1 3 0 true
+master-clear-scratch MASTER 6 H3,S -1 1 3 1 true
+master-three-singles MASTER 6 H1,H1,H1 0 3 3 0 true
+master-multi MASTER 6 H0,H2,S,H1 1 3 3 1 true
+master-uncleared MASTER 2 H1,H0 3 2 1 0 true
+master-all-misses MASTER 6 H0,H0,H0,H0,H0,H0 9 6 0 0 true
+master-at-cap-clear MASTER 2 H1,H2 -1 2 3 0 true
+master-undo-penalty MASTER 2 H1,H0,U 0 1 1 0 false
+master-undo-scratch MASTER 6 H1,S,H2,S,U 1 1 1 1 false
+master-undo-clear MASTER 6 H3,S,U 0 0 0 0 false
