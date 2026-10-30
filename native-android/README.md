@@ -36,3 +36,7 @@ Robolectric tests run Room/SQLite migration/restart, preferences, and Compose ga
 - `docs/IOS_DATA_CONTRACT.md`, `docs/contract/game-record-v1.schema.json`: independent iOS serialization/replay contract.
 - `docs/PHASE2_REPORT.md`: implemented files, results and limitations.
 - `docs/DEVELOPMENT_REPORT.md`: historical Phase 1 report, retained unchanged.
+
+## Phase 2.1 presentation redesign
+
+The compact pool-table UI is isolated under `app/src/main/java/com/nodetoursstudio/threeball/ui/`, while the Activity delegates to the existing ViewModel. Scoring, Room/DataStore and portable records are unchanged. The approved specification is preserved verbatim in `docs/UI_DESIGN_SPEC.md`. See `docs/UI_REDESIGN_REPORT.md` and `docs/ui-review/README.md` for scope, verification, before/after renders and outstanding emulator/device acceptance.
