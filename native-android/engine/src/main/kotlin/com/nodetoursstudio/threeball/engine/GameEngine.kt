@@ -50,6 +50,13 @@ object GameEngine {
         } else game.copy(draft = turn.copy(shots = turn.shots - 1, finalScratchUsed = false))
     }
 
+    /** Native correction for an accidental standard-mode scratch. Master uses per-hit undo. */
+    fun undoScratch(game: GameState): GameState {
+        playable(game)
+        require(game.config.difficulty != Difficulty.MASTER && game.draft.scratches > 0)
+        return game.copy(draft = game.draft.copy(scratches = game.draft.scratches - 1, finalScratchUsed = false))
+    }
+
     private fun setTurn(game: GameState, position: Position, turn: Turn?): List<List<Turn?>> =
         game.rounds.mapIndexed { r, row -> if (r != position.round) row else
             row.mapIndexed { p, old -> if (p == position.player) turn else old } }

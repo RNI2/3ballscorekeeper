@@ -1,0 +1,589 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nodetoursstudio:threeball:game-record:1",
+  "type": "object",
+  "properties": {
+    "storageSchemaVersion": {
+      "const": 1
+    },
+    "rulesetVersion": {
+      "const": "three-ball-2026.1"
+    },
+    "gameId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "configuration": {
+      "$ref": "#/$defs/configuration"
+    },
+    "players": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/$defs/participant"
+      }
+    },
+    "startedAtEpochMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completedAtEpochMillis": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "enum": [
+        "ACTIVE",
+        "COMPLETED",
+        "DISCARDED"
+      ]
+    },
+    "syncStatus": {
+      "const": "DISABLED"
+    },
+    "syncEligible": {
+      "const": false
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/result"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "storageSchemaVersion",
+    "rulesetVersion",
+    "gameId",
+    "configuration",
+    "players",
+    "startedAtEpochMillis",
+    "completedAtEpochMillis",
+    "status",
+    "syncStatus",
+    "syncEligible",
+    "events",
+    "result"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "difficulty": {
+          "enum": [
+            "NOVICE",
+            "PRO",
+            "EXPERT",
+            "MASTER"
+          ]
+        },
+        "scratchPlacement": {
+          "enum": [
+            "BALL_IN_HAND",
+            "KITCHEN"
+          ]
+        },
+        "shotCap": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "roundLimit": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "difficulty",
+        "scratchPlacement",
+        "shotCap",
+        "roundLimit"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "difficulty": {
+                "const": "NOVICE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "shotCap": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "difficulty": {
+                "const": "EXPERT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "shotCap": {
+                "const": 5
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "difficulty": {
+                "enum": [
+                  "PRO",
+                  "MASTER"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "shotCap": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "difficulty": {
+                "enum": [
+                  "NOVICE",
+                  "PRO",
+                  "EXPERT"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "roundLimit": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "participant": {
+      "type": "object",
+      "properties": {
+        "playerId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accountId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "regionId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "playerId",
+        "displayName",
+        "accountId",
+        "regionId"
+      ],
+      "additionalProperties": true
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "HIT",
+            "SCRATCH",
+            "UNDO",
+            "UNDO_SCRATCH",
+            "DONE",
+            "BACK",
+            "REOPEN",
+            "RENAME",
+            "WITHDRAW",
+            "FINISH"
+          ]
+        },
+        "balls": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetPlayerId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetRound": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discardDraft": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "balls",
+        "targetPlayerId",
+        "targetRound",
+        "name",
+        "discardDraft"
+      ],
+      "additionalProperties": true
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAtEpochMillis": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "roundIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actorPlayerId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "action": {
+          "$ref": "#/$defs/action"
+        }
+      },
+      "required": [
+        "eventId",
+        "sequence",
+        "occurredAtEpochMillis",
+        "roundIndex",
+        "actorPlayerId",
+        "action"
+      ],
+      "additionalProperties": true
+    },
+    "hit": {
+      "type": "object",
+      "properties": {
+        "balls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "scratch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "balls",
+        "scratch"
+      ],
+      "additionalProperties": true
+    },
+    "playerResult": {
+      "type": "object",
+      "properties": {
+        "playerId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "withdrawnRound": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "playerId",
+        "displayName",
+        "active",
+        "withdrawnRound",
+        "total"
+      ],
+      "additionalProperties": true
+    },
+    "competitive": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "const": "CASUAL"
+        },
+        "eligible": {
+          "const": false
+        },
+        "reasons": {
+          "const": [
+            "LOCAL_UNVERIFIED"
+          ]
+        }
+      },
+      "required": [
+        "category",
+        "eligible",
+        "reasons"
+      ],
+      "additionalProperties": true
+    },
+    "turn": {
+      "type": "object",
+      "properties": {
+        "shots": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scratches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/hit"
+          }
+        },
+        "remainingPenalty": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "score": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "shots",
+        "scratches",
+        "hits",
+        "remainingPenalty",
+        "score"
+      ],
+      "additionalProperties": true
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "players": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/playerResult"
+          }
+        },
+        "winnerPlayerIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/uuid"
+          }
+        },
+        "tie": {
+          "type": "boolean"
+        },
+        "completedRoundCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rounds": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/turn"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "competitive": {
+          "$ref": "#/$defs/competitive"
+        }
+      },
+      "required": [
+        "players",
+        "winnerPlayerIds",
+        "tie",
+        "completedRoundCount",
+        "rounds",
+        "competitive"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "COMPLETED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/$defs/result"
+          },
+          "completedAtEpochMillis": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ACTIVE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "null"
+          },
+          "completedAtEpochMillis": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "DISCARDED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "null"
+          },
+          "completedAtEpochMillis": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  ]
+}

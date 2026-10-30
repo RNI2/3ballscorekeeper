@@ -230,4 +230,16 @@ class GameEngineTest {
         assertEquals(1, withdrawn.completedRoundCount)
     }
 
+    @Test fun nativeScratchCorrectionRestoresCapAllowance() {
+        val capped = GameEngine.scratch(GameEngine.hit(game(Difficulty.PRO, 1)))
+        val corrected = GameEngine.undoScratch(capped)
+        assertEquals(0, corrected.draft.scratches)
+        assertFalse(corrected.draft.finalScratchUsed)
+        assertEquals(2, GameEngine.scratch(corrected).draft.score(corrected.config))
+    }
+    @Test fun nativeScratchCorrectionRejectsMasterAndEmptyTurns() {
+        rejects { GameEngine.undoScratch(game()) }
+        rejects { GameEngine.undoScratch(GameEngine.scratch(GameEngine.hit(game(Difficulty.MASTER), 3))) }
+    }
+
 }

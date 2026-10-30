@@ -1,0 +1,166 @@
+{
+  "storageSchemaVersion": 1,
+  "rulesetVersion": "three-ball-2026.1",
+  "gameId": "00000000-0000-4000-8000-000000000001",
+  "configuration": {
+    "difficulty": "MASTER",
+    "scratchPlacement": "KITCHEN",
+    "shotCap": 6,
+    "roundLimit": 1
+  },
+  "players": [
+    {
+      "playerId": "00000000-0000-4000-8000-000000000002",
+      "displayName": "Ana",
+      "accountId": null,
+      "regionId": null
+    },
+    {
+      "playerId": "00000000-0000-4000-8000-000000000003",
+      "displayName": "Bo",
+      "accountId": null,
+      "regionId": null
+    }
+  ],
+  "startedAtEpochMillis": 1000,
+  "completedAtEpochMillis": 1005,
+  "status": "COMPLETED",
+  "syncStatus": "DISABLED",
+  "syncEligible": false,
+  "events": [
+    {
+      "eventId": "00000000-0000-4000-8000-000000000100",
+      "sequence": 1,
+      "occurredAtEpochMillis": 1001,
+      "roundIndex": 0,
+      "actorPlayerId": "00000000-0000-4000-8000-000000000002",
+      "action": {
+        "type": "HIT",
+        "balls": 3,
+        "targetPlayerId": null,
+        "targetRound": null,
+        "name": null,
+        "discardDraft": false
+      }
+    },
+    {
+      "eventId": "00000000-0000-4000-8000-000000000101",
+      "sequence": 2,
+      "occurredAtEpochMillis": 1002,
+      "roundIndex": 0,
+      "actorPlayerId": "00000000-0000-4000-8000-000000000002",
+      "action": {
+        "type": "DONE",
+        "balls": null,
+        "targetPlayerId": null,
+        "targetRound": null,
+        "name": null,
+        "discardDraft": false
+      }
+    },
+    {
+      "eventId": "00000000-0000-4000-8000-000000000102",
+      "sequence": 3,
+      "occurredAtEpochMillis": 1003,
+      "roundIndex": 0,
+      "actorPlayerId": "00000000-0000-4000-8000-000000000003",
+      "action": {
+        "type": "HIT",
+        "balls": 3,
+        "targetPlayerId": null,
+        "targetRound": null,
+        "name": null,
+        "discardDraft": false
+      }
+    },
+    {
+      "eventId": "00000000-0000-4000-8000-000000000103",
+      "sequence": 4,
+      "occurredAtEpochMillis": 1004,
+      "roundIndex": 0,
+      "actorPlayerId": "00000000-0000-4000-8000-000000000003",
+      "action": {
+        "type": "DONE",
+        "balls": null,
+        "targetPlayerId": null,
+        "targetRound": null,
+        "name": null,
+        "discardDraft": false
+      }
+    },
+    {
+      "eventId": "00000000-0000-4000-8000-000000000104",
+      "sequence": 5,
+      "occurredAtEpochMillis": 1005,
+      "roundIndex": 0,
+      "actorPlayerId": "00000000-0000-4000-8000-000000000002",
+      "action": {
+        "type": "FINISH",
+        "balls": null,
+        "targetPlayerId": null,
+        "targetRound": null,
+        "name": null,
+        "discardDraft": false
+      }
+    }
+  ],
+  "result": {
+    "players": [
+      {
+        "playerId": "00000000-0000-4000-8000-000000000002",
+        "displayName": "Ana",
+        "active": true,
+        "withdrawnRound": null,
+        "total": -2
+      },
+      {
+        "playerId": "00000000-0000-4000-8000-000000000003",
+        "displayName": "Bo",
+        "active": true,
+        "withdrawnRound": null,
+        "total": -2
+      }
+    ],
+    "winnerPlayerIds": [
+      "00000000-0000-4000-8000-000000000002",
+      "00000000-0000-4000-8000-000000000003"
+    ],
+    "tie": true,
+    "completedRoundCount": 1,
+    "rounds": [
+      [
+        {
+          "shots": 1,
+          "scratches": 0,
+          "hits": [
+            {
+              "balls": 3,
+              "scratch": false
+            }
+          ],
+          "remainingPenalty": 0,
+          "score": -2
+        },
+        {
+          "shots": 1,
+          "scratches": 0,
+          "hits": [
+            {
+              "balls": 3,
+              "scratch": false
+            }
+          ],
+          "remainingPenalty": 0,
+          "score": -2
+        }
+      ]
+    ],
+    "competitive": {
+      "category": "CASUAL",
+      "eligible": false,
+      "reasons": [
+        "LOCAL_UNVERIFIED"
+      ]
+    }
+  }
+}

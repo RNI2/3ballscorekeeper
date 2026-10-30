@@ -1,0 +1,32 @@
+{
+  "storageSchemaVersion": 1,
+  "rulesetVersion": "three-ball-2026.1",
+  "gameId": "00000000-0000-4000-8000-000000000001",
+  "configuration": {
+    "difficulty": "NOVICE",
+    "scratchPlacement": "KITCHEN",
+    "shotCap": null,
+    "roundLimit": null
+  },
+  "players": [
+    {
+      "playerId": "00000000-0000-4000-8000-000000000002",
+      "displayName": "Ana",
+      "accountId": null,
+      "regionId": null
+    },
+    {
+      "playerId": "00000000-0000-4000-8000-000000000003",
+      "displayName": "Bo",
+      "accountId": null,
+      "regionId": null
+    }
+  ],
+  "startedAtEpochMillis": 1000,
+  "completedAtEpochMillis": null,
+  "status": "ACTIVE",
+  "syncStatus": "DISABLED",
+  "syncEligible": false,
+  "events": [],
+  "result": null
+}

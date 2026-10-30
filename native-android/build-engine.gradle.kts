@@ -1,2 +1,1 @@
-// Selected by -PengineOnly; no Android plugin or SDK required.
-plugins { kotlin("jvm") apply false }
+plugins { kotlin("jvm") apply false; kotlin("plugin.serialization") apply false }

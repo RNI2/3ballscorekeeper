@@ -64,3 +64,7 @@ Source anchors: `activeIdx`, `totals`, `completedRoundCount`, `archiveGame`, `ba
 ## Verification
 
 `engine/src/test/resources/scoring-vectors.tsv` supplies 16 shared scenarios. Kotlin tests check those scores and counters. `tools/verify-web-reference.mjs` reads the unmodified HTML and executes its actual scoring handlers in a Node VM against the same scenarios, including Done eligibility. It does not load the app, migrations, or DOM. Additional JUnit tests cover rules and state transitions; this is not a claim of exhaustive equivalence for every web UI path.
+
+## Phase 2 native correction extension
+
+Standard modes now expose `Undo Scratch` as an explicit correction: subtract one recorded scratch and clear the final-scratch latch, without changing physical hits. It requires a scratch and active play; Master rejects it and continues to use per-hit undo. The correction is recorded as `UNDO_SCRATCH` in the versioned event contract. Original standard hit undo, scoring arithmetic, cap rules and JavaScript reference scenarios remain unchanged. Manual arbitrary numeric scorecard edits remain excluded; use Back/hit/scratch corrections, or Master saved-turn reopening.
