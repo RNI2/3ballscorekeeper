@@ -37,3 +37,7 @@ Open `app/src/main/java/com/nodetoursstudio/threeball/ui/ReviewPreviews.kt` in A
 `./gradlew :app:testDebugUnitTest --tests '*UiVisualReviewTest'` regenerates the after PNGs under `app/build/ui-review/`. Rendering uses an API 28 host runtime. Run all UI tests for interaction checks; a PNG alone does not prove gameplay correctness. Rendering is not a pixel-diff golden assertion and fonts may differ across hosts.
 
 Before merge, the owner should review these images and walk through the app on an actual emulator/device: all four modes, undo/scratches, dirty Back/corrections, rename/withdraw, final review, finish/abandon, IME entry, system Back, history/settings and process restart. That device acceptance is still outstanding.
+
+## Phase 2.2
+
+The premium-polish comparison gallery is [polish/README.md](polish/README.md). This Phase 2.1 gallery remains preserved as the earlier review record.

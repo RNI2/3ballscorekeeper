@@ -40,3 +40,7 @@ Robolectric tests run Room/SQLite migration/restart, preferences, and Compose ga
 ## Phase 2.1 presentation redesign
 
 The compact pool-table UI is isolated under `app/src/main/java/com/nodetoursstudio/threeball/ui/`, while the Activity delegates to the existing ViewModel. Scoring, Room/DataStore and portable records are unchanged. The approved specification is preserved verbatim in `docs/UI_DESIGN_SPEC.md`. See `docs/UI_REDESIGN_REPORT.md` and `docs/ui-review/README.md` for scope, verification, before/after renders and outstanding emulator/device acceptance.
+
+## Phase 2.2 premium polish
+
+Presentation tokens, tactile controls and accepted-action haptics are implemented without changing the engine, persistence, feature flags or contracts. Compact local standings and selectable round summaries are reused by scoring/history; derived SCR/AVG/BEST values never modify results. See `docs/UI_POLISH_SPEC.md`, `docs/UI_POLISH_REPORT.md` and `docs/ui-review/polish/README.md` for the approved direction, validation and before/after evidence. Owner/device visual acceptance is still required.

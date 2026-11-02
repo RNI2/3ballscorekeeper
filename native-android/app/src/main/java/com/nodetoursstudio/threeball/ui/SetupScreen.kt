@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,8 +38,8 @@ internal fun DifficultyCard(mode: Difficulty, selected: Boolean, enabled: Boolea
     }
 }
 @Composable
-internal fun ScratchRuleCard(rule: ScratchPlacement, selected: Boolean, enabled: Boolean, choose: () -> Unit) {
-    SelectionPanel(selected, choose, enabled) {
+internal fun ScratchRuleCard(rule: ScratchPlacement, selected: Boolean, enabled: Boolean, modifier: Modifier = Modifier, choose: () -> Unit) {
+    SelectionPanel(selected, choose, enabled, modifier) {
         Text((if (selected) "✓ " else "") + rule.title(), fontWeight = FontWeight.Bold)
         Text(if (rule == ScratchPlacement.KITCHEN) "Cue ball behind the head string." else "Cue ball anywhere after a scratch.", fontSize = 13.sp, color = TableColors.Muted)
     }
@@ -64,6 +65,8 @@ internal fun SetupScreen(busy: Boolean, start: (GameConfig, List<String>) -> Uni
             Difficulty.entries.forEach { option ->
                 DifficultyCard(option, mode == option, !busy, { modeName = option.name; cap = if (option == Difficulty.MASTER) "6" else "5" }, { rules = option })
             }
+        }
+        if (mode in listOf(Difficulty.PRO, Difficulty.MASTER)) RailSection("GAME OPTIONS") {
             if (mode in listOf(Difficulty.PRO, Difficulty.MASTER)) {
                 OutlinedTextField(cap, { cap = it }, label = { Text("Hits per turn (1–99)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, enabled = !busy,
@@ -78,7 +81,11 @@ internal fun SetupScreen(busy: Boolean, start: (GameConfig, List<String>) -> Uni
             }
         }
         RailSection("AFTER A SCRATCH") {
-            ScratchPlacement.entries.forEach { value -> ScratchRuleCard(value, placementName == value.name, !busy) { placementName = value.name } }
+            if (LocalDensity.current.fontScale > 1.3f) {
+                ScratchPlacement.entries.forEach { value -> ScratchRuleCard(value, placementName == value.name, !busy) { placementName = value.name } }
+            } else Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ScratchPlacement.entries.forEach { value -> ScratchRuleCard(value, placementName == value.name, !busy, Modifier.weight(1f).fillMaxHeight()) { placementName = value.name } }
+            }
         }
         RailSection("PLAYERS · ${names.size} / $maxPlayers") {
             names.forEachIndexed { index, name ->
@@ -88,7 +95,7 @@ internal fun SetupScreen(busy: Boolean, start: (GameConfig, List<String>) -> Uni
                 if (names.size > 2) TextButton(onClick = { names = names.filterIndexed { i, _ -> i != index } }, enabled = !busy,
                     modifier = Modifier.heightIn(min = 48.dp)) { Text("Remove player ${index + 1}", color = TableColors.Gold) }
             }
-            SecondaryActionButton("+ Add player", { names = names + "" }, enabled = !busy && names.size < maxPlayers, modifier = Modifier.fillMaxWidth())
+            SupportActionButton("+ Add player", { names = names + "" }, enabled = !busy && names.size < maxPlayers, modifier = Modifier.fillMaxWidth())
             if (names.size > maxPlayers) Text("This mode allows $maxPlayers players. Remove players or select Master.", color = MaterialTheme.colorScheme.error)
         }
         PrimaryScoreButton("Start Game", { config?.let { start(it, names) } }, enabled = Features.localScoring && !busy && config != null && names.size <= maxPlayers, modifier = Modifier.fillMaxWidth())

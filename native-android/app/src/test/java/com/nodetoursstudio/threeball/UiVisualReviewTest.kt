@@ -25,9 +25,10 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class UiVisualReviewTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
-    private fun capture(name: String, content: @Composable () -> Unit) {
+    private fun capture(name: String, ready: () -> Unit = {}, content: @Composable () -> Unit) {
         compose.setContent(content)
         compose.waitForIdle()
+        ready(); compose.waitForIdle()
         val folder = File("build/ui-review").apply { mkdirs() }
         compose.runOnUiThread {
             val view = compose.activity.window.decorView
@@ -47,6 +48,8 @@ class UiVisualReviewTest {
             bitmap.recycle()
         }
     }
+    @Test fun novice() = capture("novice") { NoviceReview() }
+    @Test fun settings() = capture("settings") { SettingsReview() }
     @Test fun setup() = capture("setup") { SetupReview() }
     @Test fun masterIdle() = capture("master-idle") { IdleReview() }
     @Test fun masterAfterHit() = capture("master-after-hit") { AfterHitReview() }
@@ -60,4 +63,23 @@ class UiVisualReviewTest {
         CompositionLocalProvider(LocalDensity provides Density(density.density, 2f)) { AfterHitReview() }
     }
     @Test fun history() = capture("history") { HistoryReview() }
+    @Test fun expandedHistory() = capture("history-expanded") { ExpandedHistoryReview() }
+    @Test @Config(qualifiers = "w420dp-h900dp") fun sixPlayersAndLongName() = capture("six-players") { SixPlayerReview() }
+    @Test fun mediumFonts() = capture("master-font-130") {
+        val density = LocalDensity.current
+        CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) { AfterHitReview() }
+    }
+    @Test fun pressedAction() {
+        capture("hit-pressed", ready = { compose.onNodeWithText("Hit").performTouchInput { down(center) } }) { IdleReview() }
+        compose.onNodeWithText("Hit").performTouchInput { up() }
+    }
+
+    @Test fun scorecardRoundFocus() = capture("scorecard-round", ready = {
+        compose.onNodeWithText("Round 1").performScrollTo().performClick()
+    }) { ScorecardReview() }
+    @Test fun historyRoundFocus() = capture("history-round", ready = {
+        compose.onNodeWithText("Round details").performScrollTo().performClick()
+        compose.onNodeWithText("Round 1").performScrollTo().performClick()
+    }) { HistoryReview() }
+
 }

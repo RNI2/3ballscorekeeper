@@ -17,21 +17,20 @@ import com.nodetoursstudio.threeball.records.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.flow.first
-import java.text.DateFormat
-import java.util.Date
+import android.view.HapticFeedbackConstants
 
 @Composable
-internal fun ScorekeeperApp(model: GameViewModel) {
+internal fun ScorekeeperApp(model: GameViewModel, onAcceptedHaptic: (() -> Unit)? = null) {
     val state by model.ui.collectAsStateWithLifecycle()
     var pending by remember { mutableStateOf(false) }
     val gateScope = rememberCoroutineScope()
     val ui = state.copy(busy = state.busy || pending)
     // Gate the click synchronously, then wait for the unchanged ViewModel command flow to settle.
-    fun guarded(block: () -> Unit) {
+    fun guarded(onSettled: (GameUiState) -> Unit = {}, block: () -> Unit) {
         if (!state.busy && !pending) {
             pending = true
             gateScope.launch {
-                try { block(); yield(); model.ui.first { !it.busy } }
+                try { block(); yield(); onSettled(model.ui.first { !it.busy }) }
                 finally { pending = false }
             }
         }
@@ -62,7 +61,14 @@ internal fun ScorekeeperApp(model: GameViewModel) {
                         "History" -> HistoryScreen(ui.history, ui.recoveredRecords)
                         "Settings" -> SettingsScreen(ui) { value -> guarded { model.setKeepScreenAwake(value) } }
                         else -> if (ui.active == null) SetupScreen(ui.busy) { config, names -> guarded { model.start(config, names) } }
-                            else LiveScreen(ui, { action -> guarded { model.command(action) } }, { guarded { model.abandon() } })
+                            else LiveScreen(ui, { action ->
+                                val before = model.ui.value.active
+                                guarded(onSettled = { after ->
+                                    if (before != null && acceptedFeedback(before, after, action)) {
+                                        if (onAcceptedHaptic != null) onAcceptedHaptic() else view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                    }
+                                }) { model.command(action) }
+                            }, { guarded { model.abandon() } })
                     }
                 }
             }
@@ -71,42 +77,7 @@ internal fun ScorekeeperApp(model: GameViewModel) {
 }
 
 @Composable
-internal fun HistoryScreen(history: List<GameRecord>, recovered: Int) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(TableSpace.Gutter), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        RailSection("GAME HISTORY") {
-            Text("Every table has a story.", style = MaterialTheme.typography.titleLarge)
-            Text("Casual games · saved on this device", color = TableColors.Muted, fontSize = 12.sp)
-            if (recovered > 0) Text("$recovered unreadable record(s) preserved for recovery. Valid games remain available.", color = TableColors.Gold)
-            if (history.isEmpty()) {
-                Text("Your first scorecard awaits", style = MaterialTheme.typography.titleMedium)
-                Text("Finish a game with at least one complete round. Your scores and round details will be right here.", color = TableColors.Muted)
-            }
-        }
-        history.forEach { record ->
-            var details by rememberSaveable(record.gameId) { mutableStateOf(false) }
-            val result = requireNotNull(record.result)
-            RailSection(record.configuration.difficulty + " · " + DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(record.completedAtEpochMillis!!))) {
-                val winners = result.players.filter { it.playerId in result.winnerPlayerIds }.joinToString { it.displayName }
-                Text("${if (result.tie) "Tie" else "Winner"}: $winners", color = TableColors.Gold, style = MaterialTheme.typography.titleMedium)
-                result.players.forEach { Text("${it.displayName} · ${it.total}${if (!it.active) " (withdrawn)" else ""}") }
-                Text("${result.completedRoundCount} complete rounds · Casual · Local only", color = TableColors.Muted, fontSize = 12.sp)
-                SecondaryActionButton(if (details) "Hide details" else "Round details", { details = !details }, modifier = Modifier.fillMaxWidth())
-                if (details) result.rounds.forEachIndexed { r, row ->
-                    if (row.any { it != null }) {
-                        Text("ROUND ${r + 1}", color = TableColors.Gold)
-                        row.forEachIndexed { i, t -> if (t != null) {
-                            Text("${result.players[i].displayName} · ${t.score} points · ${t.shots} shots", fontSize = 13.sp)
-                            t.hits.forEachIndexed { h, hit -> Text("Hit ${h + 1}: ${hit.balls} pocketed${if (hit.scratch) " · Scratch +1" else ""}", fontSize = 12.sp, color = TableColors.Muted) }
-                        } }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsScreen(ui: GameUiState, awake: (Boolean) -> Unit) {
+internal fun SettingsScreen(ui: GameUiState, awake: (Boolean) -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(TableSpace.Gutter), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         RailSection("AT THE TABLE") {
             Text("Settings", style = MaterialTheme.typography.titleLarge)

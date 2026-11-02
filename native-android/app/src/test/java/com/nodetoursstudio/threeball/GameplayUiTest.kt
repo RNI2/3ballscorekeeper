@@ -25,12 +25,12 @@ class GameplayUiTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
     private val store = ViewModelStore()
     @After fun cleanup() { store.clear() }
-    private fun launch(fontScale: Float = 1f) {
+    private fun launch(fontScale: Float = 1f, haptic: (() -> Unit)? = null, failSave: () -> Boolean = { false }) {
         val repo = object : LocalGameRepository {
             var active: GameRecord? = null
             val history = mutableListOf<GameRecord>()
             override suspend fun load() = SavedGames(active, history.toList())
-            override suspend fun save(next: GameRecord, previous: GameRecord?) { active = next }
+            override suspend fun save(next: GameRecord, previous: GameRecord?) { if (failSave()) throw java.io.IOException("Test save failure"); active = next }
             override suspend fun finish(next: GameRecord, previous: GameRecord) { if (next.result != null) history.add(next); active = null }
             override suspend fun abandon(previous: GameRecord) { active = null }
         }
@@ -42,7 +42,7 @@ class GameplayUiTest {
         compose.runOnIdle { model = GameViewModel(repo, prefs, { 1000L }, Dispatchers.Main.immediate); store.put("ui", model) }
         compose.setContent {
             val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) { ThreeBallApp(model) }
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) { if (haptic == null) ThreeBallApp(model) else com.nodetoursstudio.threeball.ui.ScorekeeperApp(model, haptic) }
         }
         compose.waitForIdle()
     }
@@ -154,6 +154,30 @@ class GameplayUiTest {
         compose.onNodeWithContentDescription("Player 1 score -2").assertExists()
         compose.onNodeWithText("Done →").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Scorecard / Players").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun hapticsFollowOnlySuccessfulScoringAndDoNotRepeatOnNavigation() {
+        val pulses = java.util.concurrent.atomic.AtomicInteger()
+        var fail = false
+        launch(haptic = { pulses.incrementAndGet() }, failSave = { fail })
+        compose.onNodeWithText("Start Game").performScrollTo().performClick()
+        org.junit.Assert.assertEquals(0, pulses.get())
+        compose.onNodeWithText("HIT +1").performScrollTo().performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(1, pulses.get())
+        compose.onNodeWithText("Scratch +1").performScrollTo().performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(2, pulses.get())
+        fail = true
+        compose.onNodeWithText("HIT +1").performScrollTo().performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(2, pulses.get())
+        compose.onNodeWithContentDescription("Player 1 score 2").assertExists()
+        fail = false
+        compose.onNodeWithText("Reload saved game").performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(2, pulses.get())
+        compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Play").performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(2, pulses.get())
+        compose.onNodeWithText("Done →").performScrollTo().performClick()
+        compose.waitForIdle(); org.junit.Assert.assertEquals(3, pulses.get())
     }
 
 }

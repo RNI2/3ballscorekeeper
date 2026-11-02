@@ -49,8 +49,8 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
         BackHandler { scorecard = false }
         ScorecardScreen(game, ui.busy, { scorecard = false }) { request = it }
     } else Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(TableSpace.Gutter), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("${game.config.difficulty.title()}  ·  ${game.config.placement.title()}", fontSize = 12.sp, color = TableColors.Muted)
         RailSection(if (review) "FINAL REVIEW" else "CURRENT TURN") {
+            Text("${game.config.difficulty.title()} · ${game.config.placement.title()}", color = TableColors.Muted, fontSize = 11.sp, lineHeight = 14.sp)
             RoundProgress(game)
             if (game.editing != null) Text("Correcting a saved turn · Done returns to play", color = TableColors.Gold, fontSize = 12.sp)
             if (review) Text("Final round complete — review scores and finish.", color = TableColors.Gold)
@@ -67,25 +67,29 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
                     StatTile("SCRATCHES", "${game.draft.scratches}", Modifier.weight(1f))
                 }
                 if (master) {
-                    Text("${3 - game.draft.pocketed} balls remaining" + if (game.draft.remainingPenalty(game.config) > 0) " · Penalty +${game.draft.remainingPenalty(game.config)}" else "", color = TableColors.Gold, fontSize = 12.sp)
-                    if (game.draft.hits.isNotEmpty()) {
-                        SecondaryActionButton(if (log) "Hide hit history" else "Hit history (${game.draft.hits.size}) · latest ${game.draft.hits.last().balls} pocketed", { log = !log }, modifier = Modifier.fillMaxWidth())
+                    if (game.draft.hits.isEmpty()) Text("${3 - game.draft.pocketed} balls remaining", color = TableColors.Muted, fontSize = 12.sp, lineHeight = 16.sp)
+                    else {
+                        TextButton(onClick = { log = !log }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Text(if (log) "Hide hit history" else "${3 - game.draft.pocketed} balls left · Hit history (${game.draft.hits.size})", fontSize = 12.sp, lineHeight = 16.sp)
+                        }
                         if (log) HitLog(game.draft)
                     }
+                    if (game.draft.remainingPenalty(game.config) > 0) Text("Remaining-ball penalty +${game.draft.remainingPenalty(game.config)}", color = TableColors.Gold, fontSize = 12.sp)
+
                 }
                 val hit = Action("HIT", 0)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PrimaryScoreButton(if (master) "Hit" else "HIT +1", { if (master) chooser = true else send(hit) }, enabled = enabled(hit), modifier = Modifier.weight(1f))
-                    SecondaryActionButton("Undo Last Hit", { send(Action("UNDO")) }, enabled = enabled(Action("UNDO")), modifier = Modifier.weight(1f))
+                PrimaryScoreButton(if (master) "Hit" else "HIT +1", { if (master) chooser = true else send(hit) }, enabled = enabled(hit), modifier = Modifier.fillMaxWidth())
+                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SecondaryActionButton("Undo Last Hit", { send(Action("UNDO")) }, enabled = enabled(Action("UNDO")), modifier = Modifier.weight(1f).fillMaxHeight())
+                    if (!master || actionAllowed(game, Action("SCRATCH"))) {
+                        SecondaryActionButton(if (master) "Scratch last hit +1" else "Scratch +1", { send(Action("SCRATCH")) }, enabled = enabled(Action("SCRATCH")), modifier = Modifier.weight(1f).fillMaxHeight())
+                    }
                 }
-                // Master scratch is shown only for an eligible latest hit; standard counters remain independent.
-                if (!master || actionAllowed(game, Action("SCRATCH"))) {
-                    SecondaryActionButton(if (master) "Scratch last hit +1" else "Scratch +1", { send(Action("SCRATCH")) }, enabled = enabled(Action("SCRATCH")), modifier = Modifier.fillMaxWidth())
-                } else if (game.draft.hits.lastOrNull()?.scratch == true) Text("✓ Scratch recorded on last hit", color = TableColors.Gold, fontSize = 12.sp)
+                if (master && game.draft.hits.lastOrNull()?.scratch == true) Text("✓ Scratch recorded on last hit", color = TableColors.Muted, fontSize = 12.sp, lineHeight = 16.sp)
                 if (!master && game.draft.scratches > 0) SecondaryActionButton("Undo Scratch", { send(Action("UNDO_SCRATCH")) }, enabled = enabled(Action("UNDO_SCRATCH")), modifier = Modifier.fillMaxWidth())
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SecondaryActionButton("Back", { if (game.draft.hasEntries) request = ReviewRequest("back") else send(Action("BACK")) }, enabled = enabled(Action("BACK")), modifier = Modifier.weight(1f))
-                    PrimaryScoreButton("Done →", { send(Action("DONE")) }, enabled = enabled(Action("DONE")), modifier = Modifier.weight(1f))
+                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SecondaryActionButton("Back", { if (game.draft.hasEntries) request = ReviewRequest("back") else send(Action("BACK")) }, enabled = enabled(Action("BACK")), modifier = Modifier.weight(1f).fillMaxHeight())
+                    PrimaryScoreButton("Done →", { send(Action("DONE")) }, enabled = enabled(Action("DONE")), modifier = Modifier.weight(1f).fillMaxHeight())
                 }
                 val hint = when {
                     game.config.shotCap != null && game.draft.shots >= game.config.shotCap!! -> "Shot limit reached · undo or complete this turn."
@@ -97,8 +101,10 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
             }
         }
         LeaderPreview(game)
-        SecondaryActionButton("Scorecard / Players", { scorecard = true }, modifier = Modifier.fillMaxWidth())
-        TextButton(onClick = { request = ReviewRequest("finish") }, enabled = enabled(Action("FINISH")), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Finish Game", color = if (enabled(Action("FINISH"))) TableColors.Gold else TableColors.Muted) }
+        Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SupportActionButton("Scorecard / Players", { scorecard = true }, modifier = Modifier.weight(2f).fillMaxHeight())
+            TextButton(onClick = { request = ReviewRequest("finish") }, enabled = enabled(Action("FINISH")), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) { Text("Finish Game", color = if (enabled(Action("FINISH"))) TableColors.Muted else TableColors.Muted.copy(alpha = .55f)) }
+        }
     }
     if (chooser) ModalBottomSheet(onDismissRequest = { chooser = false }, containerColor = TableColors.Felt) {
         Column(Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -127,14 +133,7 @@ internal fun RoundProgress(game: GameState) {
 }
 @Composable
 internal fun LeaderPreview(game: GameState) {
-    val leaders = game.winnerIndices
-    RailSection("CURRENT LEADER") {
-        if (leaders.isEmpty()) Text("Your table is ready. First saved turn sets the pace.", fontSize = 13.sp, color = TableColors.Muted)
-        else {
-            Text((if (leaders.size > 1) "Tie · " else "") + leaders.take(2).joinToString { game.players[it].name } + if (leaders.size > 2) " +${leaders.size - 2} tied" else "", fontWeight = FontWeight.Bold)
-            Text("${game.totals[leaders.first()]} points · lowest saved total", color = TableColors.Gold, fontSize = 12.sp)
-        }
-    }
+    CompactStandings(standings(game))
 }
 @Composable
 internal fun HitLog(turn: Turn) {
@@ -157,20 +156,16 @@ private fun ScorecardScreen(game: GameState, busy: Boolean, close: () -> Unit, r
                 }
             }
         }
-        game.rounds.forEachIndexed { r, row ->
-            if (row.any { it != null }) RailSection("ROUND ${r + 1}") {
-                row.forEachIndexed { player, turn ->
-                    if (turn != null) {
-                        Text("${game.players[player].name} · ${turn.score(game.config)} points", fontWeight = FontWeight.Bold)
-                        Text("${turn.shots} shots · ${turn.scratches} scratches" + if (game.config.difficulty == Difficulty.MASTER) " · ${turn.pocketed} pocketed" else "", fontSize = 12.sp, color = TableColors.Muted)
-                        if (game.config.difficulty == Difficulty.MASTER) {
-                            HitLog(turn)
-                            SecondaryActionButton("Edit ${game.players[player].name} · round ${r + 1}", { request(ReviewRequest("reopen", Position(r, player))) }, enabled = !busy && game.editing == null && turn.hits.isNotEmpty(), modifier = Modifier.fillMaxWidth())
-                            if (turn.hits.isEmpty()) Text("No individual hits available to edit.", color = TableColors.Muted)
-                        }
-                    } else Text("${game.players[player].name} · —", color = TableColors.Muted)
-                }
-            }
+        val rounds = game.rounds.indices.filter { game.rounds[it].any { turn -> turn != null } }
+        var selected by rememberSaveable { mutableIntStateOf(0) }
+        if (rounds.isNotEmpty()) RailSection("ROUND SCORECARD") {
+            val index = selected.coerceIn(0, rounds.lastIndex)
+            RoundSelector(rounds.map { it + 1 }, index) { selected = it }
+            val r = rounds[index]
+            RoundSummary(r + 1, game.players.map { it.name }, game.rounds[r].map { turn -> turn?.let {
+                TurnResult(it.shots, it.scratches, it.hits.map { hit -> HitResult(hit.balls, hit.scratch) }, it.remainingPenalty(game.config), it.score(game.config))
+            } }, edit = if (game.config.difficulty == Difficulty.MASTER) { p -> request(ReviewRequest("reopen", Position(r, p))) } else null,
+                editable = !busy && game.editing == null)
         }
         if (game.config.difficulty != Difficulty.MASTER) Text("Use Back on the scoring screen to reopen a previous turn.", color = TableColors.Muted)
         DestructiveActionButton("Abandon without saving to history", { request(ReviewRequest("abandon")) }, enabled = !busy, modifier = Modifier.fillMaxWidth())

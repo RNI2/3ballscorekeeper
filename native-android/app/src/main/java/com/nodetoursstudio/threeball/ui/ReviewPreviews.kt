@@ -63,3 +63,42 @@ internal fun LandscapeReview() = AfterHitReview()
 @Preview(name = "Master · tall phone", widthDp = 400, heightDp = 900, showBackground = true)
 @Composable
 internal fun TallReview() = AfterHitReview()
+
+@Preview(name = "Novice", widthDp = 360, heightDp = 800, showBackground = true)
+@Composable
+internal fun NoviceReview() = ReviewFrame {
+    val r = Records.start(GameConfig(Difficulty.NOVICE, ScratchPlacement.KITCHEN), listOf("Alex", "Jordan"), 1793383200000)
+    LiveScreen(GameUiState(busy = false, loaded = true, active = r, game = Records.state(r)), {}, {})
+}
+@Preview(name = "Settings", widthDp = 360, heightDp = 800, showBackground = true)
+@Composable
+internal fun SettingsReview() = ReviewFrame("Settings") { SettingsScreen(GameUiState(busy = false, loaded = true)) {} }
+
+internal fun reviewSixPlayerRecord(): GameRecord {
+    var r = Records.start(GameConfig(Difficulty.MASTER, ScratchPlacement.BALL_IN_HAND, roundLimit = 3),
+        listOf("Alexandra Montgomerie", "Jordan", "Casey", "Morgan", "Sam", "Riley"), 1793383200000)
+    repeat(2) { round -> repeat(6) { player ->
+        if ((round + player) % 2 == 0) {
+            r = Records.apply(r, Action("HIT", 2), 1793383200001)
+            r = Records.apply(r, Action("SCRATCH"), 1793383200001)
+            r = Records.apply(r, Action("HIT", 1), 1793383200001)
+        } else r = Records.apply(r, Action("HIT", 3), 1793383200001)
+        r = Records.apply(r, Action("DONE"), 1793383200001)
+    } }
+    return r
+}
+@Preview(name = "History · rankings and rounds", widthDp = 360, heightDp = 800, showBackground = true)
+@Composable
+internal fun ExpandedHistoryReview() = ReviewFrame("History") {
+    val r = Records.apply(reviewSixPlayerRecord(), Action("FINISH"), 1793383200002)
+    HistoryScreen(listOf(r), 0, r.gameId)
+}
+@Preview(name = "Six players · long name", widthDp = 420, heightDp = 900, showBackground = true)
+@Composable
+internal fun SixPlayerReview() = ReviewFrame {
+    val r = Records.apply(reviewSixPlayerRecord(), Action("HIT", 3), 1793383200002)
+    LiveScreen(GameUiState(busy = false, loaded = true, active = r, game = Records.state(r)), {}, {})
+}
+@Preview(name = "Master · 130% font", widthDp = 360, heightDp = 800, fontScale = 1.3f, showBackground = true)
+@Composable
+internal fun MediumFontReview() = AfterHitReview()
