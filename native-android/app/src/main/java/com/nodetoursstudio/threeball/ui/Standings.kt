@@ -3,6 +3,8 @@ package com.nodetoursstudio.threeball.ui
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -58,7 +60,8 @@ internal fun CompactStandings(rows: List<Standing>, expanded: Boolean = false) {
                 listOf("PTS", "BEST", "AVG", "SCR").forEach { Text(it, Modifier.width(80.dp), color = TableColors.Muted, fontSize = 12.sp) }
             }
             ranked(rows).forEach { row ->
-                Row(Modifier.width(550.dp).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.width(550.dp).clip(RoundedCornerShape(8.dp)).background(if (row.winner) TableColors.Gold.copy(alpha = .13f) else TableColors.CanvasRaised)
+                    .border(if (row.winner) .7.dp else .3.dp, if (row.winner) TableColors.Gold.copy(alpha = .65f) else TableColors.Border, RoundedCornerShape(8.dp)).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Row(Modifier.width(230.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         RankMedal(rank(row, rows))
                         Column(Modifier.weight(1f)) {

@@ -82,4 +82,13 @@ class UiVisualReviewTest {
         compose.onNodeWithText("Round 1").performScrollTo().performClick()
     }) { HistoryReview() }
 
+    @Test fun selectedMasterSetup() = capture("setup-master", ready = {
+        compose.onNodeWithText("Master").performScrollTo().performClick()
+        compose.onNodeWithText("GAME SETUP").performScrollTo()
+    }) { SetupReview() }
+    @Test fun laterHistoryRound() = capture("history-later-round", ready = {
+        compose.onNodeWithText("Round 2").performScrollTo().performClick()
+        compose.onNodeWithText("ROUND 2").performScrollTo()
+    }) { ExpandedHistoryReview() }
+
 }

@@ -32,7 +32,8 @@ internal fun HistoryScreen(history: List<GameRecord>, recovered: Int, initialExp
                 val winners = result.players.filter { it.playerId in result.winnerPlayerIds }.joinToString { it.displayName }
                 Text("${if (result.tie) "Tie" else "Winner"}: $winners", color = TableColors.Cream, style = MaterialTheme.typography.titleMedium)
                 Text("${result.completedRoundCount} complete rounds · Casual · Local only", color = TableColors.Muted, fontSize = 12.sp)
-                CompactStandings(standings(result), expanded)
+                if (expanded) CompactStandings(standings(result), true)
+                else Text(result.players.take(3).joinToString(" · ") { "${it.displayName} ${it.total}" } + if (result.players.size > 3) " · +${result.players.size - 3} players" else "", color = TableColors.Muted, fontSize = 13.sp)
                 SecondaryActionButton(if (expanded) "Hide details" else "Round details", { expandedId = if (expanded) null else record.gameId }, modifier = Modifier.fillMaxWidth())
                 if (expanded) {
                     val rounds = result.rounds.indices.filter { r -> result.rounds[r].any { it != null } }

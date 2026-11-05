@@ -45,7 +45,7 @@ internal fun ScorekeeperApp(model: GameViewModel, onAcceptedHaptic: (() -> Unit)
     ThreeBallTheme {
         Scaffold(modifier = Modifier.imePadding(), containerColor = TableColors.Deep,
             bottomBar = { ThreeBallBottomBar(page, Features.localHistory) { page = it } }) { insets ->
-            Column(Modifier.fillMaxSize().felt().padding(insets)) {
+            Column(Modifier.fillMaxSize().canvas().padding(insets)) {
                 BrandedHeader()
                 if (ui.busy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = TableColors.Gold)
                 if (ui.recoveredRecords > 0) Text("Unreadable records retained for recovery. See History.", color = TableColors.Gold, fontSize = 12.sp, modifier = Modifier.padding(8.dp))

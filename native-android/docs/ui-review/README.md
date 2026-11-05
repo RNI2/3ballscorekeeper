@@ -41,3 +41,7 @@ Before merge, the owner should review these images and walk through the app on a
 ## Phase 2.2
 
 The premium-polish comparison gallery is [polish/README.md](polish/README.md). This Phase 2.1 gallery remains preserved as the earlier review record.
+
+## Phase 2.3
+
+See the [visual richness gallery](richness/README.md) for the latest paired host renders and actual Android emulator screenshots. Earlier phase artifacts above remain unchanged.

@@ -49,7 +49,7 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
         BackHandler { scorecard = false }
         ScorecardScreen(game, ui.busy, { scorecard = false }) { request = it }
     } else Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(TableSpace.Gutter), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        RailSection(if (review) "FINAL REVIEW" else "CURRENT TURN") {
+        RailSection(if (review) "FINAL REVIEW" else "CURRENT TURN", accent = true) {
             Text("${game.config.difficulty.title()} · ${game.config.placement.title()}", color = TableColors.Muted, fontSize = 11.sp, lineHeight = 14.sp)
             RoundProgress(game)
             if (game.editing != null) Text("Correcting a saved turn · Done returns to play", color = TableColors.Gold, fontSize = 12.sp)
@@ -89,7 +89,7 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
                 if (!master && game.draft.scratches > 0) SecondaryActionButton("Undo Scratch", { send(Action("UNDO_SCRATCH")) }, enabled = enabled(Action("UNDO_SCRATCH")), modifier = Modifier.fillMaxWidth())
                 Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SecondaryActionButton("Back", { if (game.draft.hasEntries) request = ReviewRequest("back") else send(Action("BACK")) }, enabled = enabled(Action("BACK")), modifier = Modifier.weight(1f).fillMaxHeight())
-                    PrimaryScoreButton("Done →", { send(Action("DONE")) }, enabled = enabled(Action("DONE")), modifier = Modifier.weight(1f).fillMaxHeight())
+                    ConfirmationActionButton("Done →", { send(Action("DONE")) }, enabled = enabled(Action("DONE")), modifier = Modifier.weight(1f).fillMaxHeight())
                 }
                 val hint = when {
                     game.config.shotCap != null && game.draft.shots >= game.config.shotCap!! -> "Shot limit reached · undo or complete this turn."
@@ -103,10 +103,10 @@ internal fun LiveScreen(ui: GameUiState, send: (Action) -> Unit, abandon: () -> 
         LeaderPreview(game)
         Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SupportActionButton("Scorecard / Players", { scorecard = true }, modifier = Modifier.weight(2f).fillMaxHeight())
-            TextButton(onClick = { request = ReviewRequest("finish") }, enabled = enabled(Action("FINISH")), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) { Text("Finish Game", color = if (enabled(Action("FINISH"))) TableColors.Muted else TableColors.Muted.copy(alpha = .55f)) }
+            DestructiveActionButton("Finish Game", { request = ReviewRequest("finish") }, enabled = enabled(Action("FINISH")), modifier = Modifier.weight(1.2f).fillMaxHeight())
         }
     }
-    if (chooser) ModalBottomSheet(onDismissRequest = { chooser = false }, containerColor = TableColors.Felt) {
+    if (chooser) ModalBottomSheet(onDismissRequest = { chooser = false }, containerColor = TableColors.CanvasRaised) {
         Column(Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("How many balls went in?", style = MaterialTheme.typography.titleLarge)
             Text("${3 - game.draft.pocketed} balls remaining · choose to record one hit", color = TableColors.Muted)
@@ -176,7 +176,7 @@ private fun ScorecardScreen(game: GameState, busy: Boolean, close: () -> Unit, r
 private fun GameConfirmation(game: GameState, record: GameRecord, request: ReviewRequest, enabled: Boolean,
                              dismiss: () -> Unit, send: (Action) -> Unit, abandon: () -> Unit) {
     var name by remember(request) { mutableStateOf(request.name) }
-    AlertDialog(onDismissRequest = dismiss, containerColor = TableColors.Felt, title = { Text(when (request.type) {
+    AlertDialog(onDismissRequest = dismiss, containerColor = TableColors.CanvasRaised, title = { Text(when (request.type) {
         "finish" -> "Finish this game?"; "abandon" -> "Abandon this game?"; "rename" -> "Rename player"; "withdraw" -> "Withdraw player?"; else -> "Correct a turn?"
     }, style = MaterialTheme.typography.titleLarge) }, text = {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {

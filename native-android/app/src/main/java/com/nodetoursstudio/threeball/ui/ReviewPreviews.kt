@@ -23,7 +23,7 @@ internal fun reviewRecord(afterHit: Boolean = false, finished: Boolean = false):
 @Composable
 internal fun ReviewFrame(page: String = "Play", content: @Composable () -> Unit) {
     ThreeBallTheme {
-        Column(Modifier.fillMaxSize().felt()) {
+        Column(Modifier.fillMaxSize().canvas()) {
             BrandedHeader()
             Box(Modifier.weight(1f)) { content() }
             ThreeBallBottomBar(page, true) {}

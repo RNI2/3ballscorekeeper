@@ -28,10 +28,11 @@ private fun Difficulty.subtitle() = when (this) {
 @Composable
 internal fun DifficultyCard(mode: Difficulty, selected: Boolean, enabled: Boolean, choose: () -> Unit, rules: () -> Unit) {
     SelectionPanel(selected, choose, enabled) {
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            DifficultyEmblem(mode)
             Column(Modifier.weight(1f)) {
                 Text(mode.title(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text((if (selected) "✓ Selected · " else "") + mode.subtitle(), color = TableColors.Muted, fontSize = 13.sp)
+                Text((if (selected) "✓ Selected · " else "") + mode.subtitle(), color = if (selected) TableColors.Cream else TableColors.Muted, fontSize = 13.sp)
             }
             TextButton(onClick = rules, modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "${mode.title()} Rules" }) { Text("Rules") }
         }
@@ -41,7 +42,7 @@ internal fun DifficultyCard(mode: Difficulty, selected: Boolean, enabled: Boolea
 internal fun ScratchRuleCard(rule: ScratchPlacement, selected: Boolean, enabled: Boolean, modifier: Modifier = Modifier, choose: () -> Unit) {
     SelectionPanel(selected, choose, enabled, modifier) {
         Text((if (selected) "✓ " else "") + rule.title(), fontWeight = FontWeight.Bold)
-        Text(if (rule == ScratchPlacement.KITCHEN) "Cue ball behind the head string." else "Cue ball anywhere after a scratch.", fontSize = 13.sp, color = TableColors.Muted)
+        Text(if (rule == ScratchPlacement.KITCHEN) "Cue ball behind the head string." else "Cue ball anywhere after a scratch.", fontSize = 13.sp, color = if (selected) TableColors.Cream else TableColors.Muted)
     }
 }
 
@@ -67,17 +68,28 @@ internal fun SetupScreen(busy: Boolean, start: (GameConfig, List<String>) -> Uni
             }
         }
         if (mode in listOf(Difficulty.PRO, Difficulty.MASTER)) RailSection("GAME OPTIONS") {
-            if (mode in listOf(Difficulty.PRO, Difficulty.MASTER)) {
+            val shotsField: @Composable () -> Unit = {
                 OutlinedTextField(cap, { cap = it }, label = { Text("Hits per turn (1–99)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, enabled = !busy,
                     isError = (cap.toIntOrNull() ?: 0) !in 1..99, modifier = Modifier.fillMaxWidth())
                 if ((cap.toIntOrNull() ?: 0) !in 1..99) Text("Enter a whole number from 1 to 99.", color = MaterialTheme.colorScheme.error)
             }
-            if (mode == Difficulty.MASTER) {
+            val roundsField: @Composable () -> Unit = {
                 OutlinedTextField(rounds, { rounds = it }, label = { Text("Rounds (1–999, blank = unlimited)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, enabled = !busy,
                     isError = rounds.isNotBlank() && (rounds.toIntOrNull() ?: 0) !in 1..999, modifier = Modifier.fillMaxWidth())
                 if (rounds.isNotBlank() && (rounds.toIntOrNull() ?: 0) !in 1..999) Text("Use 1–999 rounds, or leave blank for unlimited play.", color = MaterialTheme.colorScheme.error)
+            }
+            BoxWithConstraints {
+                if (mode == Difficulty.MASTER && maxWidth >= 340.dp && LocalDensity.current.fontScale <= 1.1f) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(Modifier.weight(1f)) { shotsField() }
+                        Column(Modifier.weight(1f)) { roundsField() }
+                    }
+                } else Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    shotsField()
+                    if (mode == Difficulty.MASTER) roundsField()
+                }
             }
         }
         RailSection("AFTER A SCRATCH") {
@@ -106,7 +118,7 @@ internal fun SetupScreen(busy: Boolean, start: (GameConfig, List<String>) -> Uni
 
 @Composable
 private fun RulesDialog(mode: Difficulty, dismiss: () -> Unit) {
-    AlertDialog(onDismissRequest = dismiss, containerColor = TableColors.Felt, title = { Text("${mode.title()} Rules", style = MaterialTheme.typography.titleLarge) },
+    AlertDialog(onDismissRequest = dismiss, containerColor = TableColors.CanvasRaised, title = { Text("${mode.title()} Rules", style = MaterialTheme.typography.titleLarge) },
         text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(when (mode) {
                 Difficulty.NOVICE -> "Unlimited physical shots. Each hit adds 1 point and each scratch adds 1 point."

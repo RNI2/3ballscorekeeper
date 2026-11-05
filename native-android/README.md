@@ -44,3 +44,7 @@ The compact pool-table UI is isolated under `app/src/main/java/com/nodetoursstud
 ## Phase 2.2 premium polish
 
 Presentation tokens, tactile controls and accepted-action haptics are implemented without changing the engine, persistence, feature flags or contracts. Compact local standings and selectable round summaries are reused by scoring/history; derived SCR/AVG/BEST values never modify results. See `docs/UI_POLISH_SPEC.md`, `docs/UI_POLISH_REPORT.md` and `docs/ui-review/polish/README.md` for the approved direction, validation and before/after evidence. Owner/device visual acceptance is still required.
+
+## Phase 2.3 visual richness
+
+The neutral charcoal and local emerald design system preserves scoring and storage behavior. See `docs/UI_RICHNESS_SPEC.md`, `docs/UI_RICHNESS_REPORT.md` and `docs/ui-review/richness/README.md` for approved references, automated verification and paired host/emulator evidence. Owner visual approval remains pending.
