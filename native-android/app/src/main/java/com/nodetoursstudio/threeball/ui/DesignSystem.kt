@@ -14,6 +14,8 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.*
@@ -76,28 +78,34 @@ internal fun Modifier.heroFelt(): Modifier = background(Brush.linearGradient(lis
     while (x < size.width) { drawLine(Color.White.copy(alpha = .018f), Offset(x, 0f), Offset(x, size.height), .5.dp.toPx()); x += 4.dp.toPx() }
 }
 
+/** The same transparent vector is referenced by launcher, system splash and header. */
 @Composable
-internal fun ThreeBallLogo(size: Dp = 38.dp) {
-    val diameter = with(LocalDensity.current) { size.toPx() }
-    Box(Modifier.size(size).clearAndSetSemantics {}.shadow(4.dp, CircleShape).clip(CircleShape)
-        .background(Brush.radialGradient(listOf(Color(0xFFFF8B7F), Color(0xFFD52220), Color(0xFF65080E)), center = Offset(diameter*.28f, diameter*.2f), radius = diameter))
-        .border(1.dp, Color(0xFF5B0707), CircleShape).drawBehind {
-            drawCircle(Color.White.copy(alpha = .4f), this.size.width*.065f, Offset(this.size.width*.28f,this.size.height*.21f))
-        }, contentAlignment = Alignment.Center) {
-        Box(Modifier.size(size*.46f).clip(CircleShape).background(Brush.verticalGradient(listOf(TableColors.Cream, Color(0xFFE2D6B6)))), contentAlignment = Alignment.Center) {
-            Text("3", color = TableColors.Ink, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Black,
-                fontSize = (size.value*.32f/LocalDensity.current.fontScale).sp, lineHeight = (size.value*.4f/LocalDensity.current.fontScale).sp)
-        }
-    }
+internal fun ThreeBallLogo(size: Dp = 45.dp) {
+    Image(painterResource(R.drawable.ic_three_ball), contentDescription = null,
+        modifier = Modifier.size(size).clearAndSetSemantics {}, contentScale = ContentScale.Fit)
 }
+
+@Composable
+internal fun StudioLockup(compact: Boolean = false) {
+    if (compact) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Image(painterResource(R.drawable.studio_compact), contentDescription = null,
+            modifier = Modifier.size(30.dp), contentScale = ContentScale.Fit)
+        Text(stringResource(R.string.studio_brand_name), fontSize = 12.sp, lineHeight = 15.sp, color = TableColors.Cream)
+    } else Image(painterResource(R.drawable.studio_header), contentDescription = stringResource(R.string.studio_brand_name),
+        modifier = Modifier.width(172.dp).aspectRatio(1032f / 208f), contentScale = ContentScale.Fit)
+}
+
 @Composable
 internal fun BrandedHeader() {
-    Row(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(TableColors.Ink, TableColors.Deep))).padding(horizontal = 14.dp, vertical = 7.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(11.dp)) {
+    Row(Modifier.fillMaxWidth().background(TableColors.Canvas).padding(horizontal = 12.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         ThreeBallLogo()
-        Column(Modifier.weight(1f)) {
-            Text("3-Ball Scorekeeper", style = MaterialTheme.typography.titleLarge, fontSize = 21.sp, lineHeight = 25.sp)
-            if (LocalDensity.current.fontScale < 1.5f) Text(stringResource(R.string.studio_name).uppercase(), color = TableColors.Muted, fontSize = 9.sp, lineHeight = 12.sp, letterSpacing = 1.5.sp)
+        BoxWithConstraints(Modifier.weight(1f)) {
+            val compact = maxWidth < 200.dp || LocalDensity.current.fontScale >= 1.5f
+            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text("3-Ball Scorekeeper", style = MaterialTheme.typography.titleLarge, fontSize = 21.sp, lineHeight = 25.sp)
+                StudioLockup(compact = compact)
+            }
         }
     }
     HorizontalDivider(thickness = 2.dp, color = TableColors.Copper)

@@ -1,0 +1,14 @@
+<resources>
+    <style name="Theme.ThreeBall" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:statusBarColor">@color/brand_canvas</item>
+        <item name="android:navigationBarColor">@color/brand_canvas</item>
+        <item name="android:windowBackground">@color/brand_canvas</item>
+        <item name="android:windowSplashScreenBackground">@color/brand_canvas</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/brand_splash_icon</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/studio_header</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/brand_canvas</item>
+    </style>
+</resources>

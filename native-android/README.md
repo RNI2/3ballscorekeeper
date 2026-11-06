@@ -48,3 +48,7 @@ Presentation tokens, tactile controls and accepted-action haptics are implemente
 ## Phase 2.3 visual richness
 
 The neutral charcoal and local emerald design system preserves scoring and storage behavior. See `docs/UI_RICHNESS_SPEC.md`, `docs/UI_RICHNESS_REPORT.md` and `docs/ui-review/richness/README.md` for approved references, automated verification and paired host/emulator evidence. Owner visual approval remains pending.
+
+## Phase 2.4 official branding
+
+Shared startup/header identity and the supplied official No Detours Studio artwork are documented in `docs/BRAND_SPLASH_REPORT.md`, `docs/brand/README.md` and `docs/brand/review/README.md`. Owner visual approval remains pending.
